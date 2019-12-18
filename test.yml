@@ -1,0 +1,6 @@
+Resources:
+    tmp:
+        Type: AWS::S3::Bucket
+    
+    tmp3:
+        Type: AWS::AccessAnalyzer::Analyzer
