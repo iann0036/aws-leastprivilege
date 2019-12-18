@@ -2,7 +2,7 @@
 
 > **WORK IN PROGRESS**
 
-Generates an IAM policy with the permissions
+Generates an IAM policy with the permissions retrieved from the [CloudFormation Registry](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry.html).
 
 ```
 $ python3 index.py -i test.yml
