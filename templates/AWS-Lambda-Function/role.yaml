@@ -1,0 +1,62 @@
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-Lambda-Function-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: LambdaFunction-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - lambda:CreateFunction
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+                        Condition:
+                            "Null":
+                                lambda:Layer: true
+                      - Effect: Allow
+                        Action:
+                          - iam:PassRole
+                        Resource: !ImportValue svcrolegensupport-AWS-Lambda-Function-Role
+                        Condition:
+                            StringEquals:
+                                iam:PassedToService: lambda.amazonaws.com
+                      - Effect: Allow
+                        Action:
+                          - s3:GetObject
+                        Resource: arn:aws:s3:::ianmckay-ap-southeast-2/emptyhandler.zip
+              - PolicyName: LambdaFunction-createnm
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - lambda:GetFunction
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+              - PolicyName: LambdaFunction-update
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - lambda:UpdateFunctionConfiguration
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+              - PolicyName: LambdaFunction-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - lambda:DeleteFunction
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*

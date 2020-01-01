@@ -2,5 +2,5 @@ Resources:
     tmp:
         Type: AWS::S3::Bucket
     
-    tmp3:
+    tmp2:
         Type: AWS::AccessAnalyzer::Analyzer

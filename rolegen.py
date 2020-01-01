@@ -1,6 +1,10 @@
 import boto3
-import yaml
 import json
+from cfn_flip import to_json
+
+
+class InvalidArguments(Exception):
+    pass
 
 
 class RoleGen:
@@ -17,12 +21,12 @@ class RoleGen:
     def generate(self):
         if self.input_file:
             with open(self.input_file, "r", encoding="utf-8") as f:
-                template = yaml.safe_load(f.read())
+                template = json.loads(to_json(f.read()))
         else:
-            raise Exception("No template provided")
+            raise InvalidArguments("No template provided")
 
         if "Resources" not in template:
-            raise Exception("Resources not in template")
+            raise InvalidArguments("Resources not in template")
 
         for resname, res in template["Resources"].items():
             self.get_permissions_for_type(res["Type"])
@@ -42,13 +46,17 @@ class RoleGen:
         }
 
         if len(self.skipped_types) > 0:
-            print("WARNING: Skipped the following types: {}\n".format(", ".join(list(set(self.skipped_types)))))
+            print("WARNING: Skipped the following types: {}\n".format(
+                ", ".join(list(set(self.skipped_types)))))
 
         print(json.dumps(policy, indent=4, separators=(',', ': ')))
 
         list(set(self.simple_permissions))
 
     def get_permissions_for_type(self, restype):
+        self.get_remote_permissions_for_type(restype)
+
+    def get_remote_permissions_for_type(self, restype):
         remote_type_def = self.cfnclient.describe_type(
             Type='RESOURCE',
             TypeName=restype

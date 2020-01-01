@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Lambda-Function
+Resources:
+    LambdaFunction:
+        Type: AWS::Lambda::Function
+        Properties:
+            Handler: index.handler2
+            Role: !ImportValue svcrolegensupport-AWS-Lambda-Function-Role
+            Code: 
+                S3Bucket: ianmckay-ap-southeast-2
+                S3Key: emptyhandler.zip
+            Runtime: nodejs12.x
+            Timeout: 10
+            TracingConfig:
+                Mode: Active

@@ -1,5 +1,5 @@
 import argparse
-from rolegen import RoleGen
+from rolegen import RoleGen, InvalidArguments
 
 
 def main(args):
@@ -14,7 +14,6 @@ if __name__ == "__main__":
                         action="store", dest="input_file")
     parser.add_argument("--stack-name", action="store", dest="stack_name")
     parser.add_argument("--region", action="store", dest="region")
-
     parser.add_argument(
         "-v",
         "--verbose",
@@ -23,4 +22,8 @@ if __name__ == "__main__":
         help="verbose logging")
 
     args = parser.parse_args()
-    main(args)
+    try:
+        main(args)
+    except InvalidArguments as e:
+        print("ERROR: {}\n".format(e))
+        parser.print_usage()
