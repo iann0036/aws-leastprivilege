@@ -1,6 +1,6 @@
 # CloudFormation Service Role Generator
 
-> **WORK IN PROGRESS**
+> :construction: **WORK IN PROGRESS**
 
 Generates an IAM policy for the CloudFormation service role that adheres to least privilege.
 
@@ -11,7 +11,7 @@ Policies will be created with data following the below preference:
 
 ## Usage
 
-### Basic Example
+### Basic Examples
 
 ```
 $ python3 index.py -i test.yml
@@ -80,6 +80,27 @@ WARNING: Skipped the following types: AWS::S3::Bucket
 }
 ```
 
+```
+$ python3 index.py --stack-name mystack
+
+{
+    "PolicyName": "root",
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "test-create1-reg",
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:ImportKeyPair"
+                ],
+                "Resource": "*"
+            }
+        ]
+    }
+}
+```
+
 ### Options
 
 The following command line arguments are available:
@@ -90,7 +111,7 @@ The filename of a local CloudFormation template file to analyze. You must specif
 
 #### --stack-name <stackname>
 
-The name of a deployed CloudFormation stack to analyze. You must specify either this option or `-i, --input-filename`.
+The stack name or stack ID of a deployed CloudFormation stack to analyze. You must specify either this option or `-i, --input-filename`.
 
 #### --skip-update-policy
 

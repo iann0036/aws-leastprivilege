@@ -27,11 +27,20 @@ class RoleGen:
 
     def generate(self):
         if self.input_file:
-            with open(self.input_file, "r", encoding="utf-8") as f:
-                try:
+            try:
+                with open(self.input_file, "r", encoding="utf-8") as f:
                     template = json.loads(to_json(f.read()))
-                except:
-                    raise InvalidTemplate("Invalid template (could not parse)")
+            except:
+                raise InvalidTemplate("Invalid template (could not parse)")
+        elif self.stack_name:
+            try:
+                template_body = self.cfnclient.get_template(
+                    StackName=self.stack_name,
+                    TemplateStage='Processed'
+                )['TemplateBody']
+                template = json.loads(to_json(template_body))
+            except:
+                raise InvalidTemplate("Could not retrieve remote stack")
         else:
             raise InvalidArguments("No template provided")
 
@@ -52,7 +61,7 @@ class RoleGen:
         if len(self.skipped_types) > 0:
             print("WARNING: Skipped the following types: {}\n".format(
                 ", ".join(list(set(self.skipped_types)))))
-
+        
         print(json.dumps(policy, indent=4, separators=(',', ': ')))
 
     def _get_property_or_default(self, res, notfoundvalue, *propertypath):
