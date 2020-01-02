@@ -1,0 +1,48 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-EC2-SecurityGroup-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-EC2-SecurityGroup-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: EC2SecurityGroup-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - ec2:DescribeSecurityGroups
+                          - ec2:CreateSecurityGroup
+                          - ec2:CreateTags
+                          - ec2:RevokeSecurityGroupEgress
+                          - ec2:AuthorizeSecurityGroupIngress
+                          - ec2:AuthorizeSecurityGroupEgress
+                        Resource: '*'
+              - PolicyName: EC2SecurityGroup-update
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - ec2:RevokeSecurityGroupIngress
+                          - ec2:DeleteTags
+                        Resource: '*'
+              - PolicyName: EC2SecurityGroup-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - ec2:DeleteSecurityGroup
+                        Resource: '*'

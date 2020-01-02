@@ -37,3 +37,23 @@ Resources:
                 SubnetIds:
                   - subnet-12345678901234567
                   - subnet-12345678901234568
+
+    SecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupName: svcrolegen-AWS-EC2-SecurityGroup
+            GroupDescription: svcrolegen-AWS-EC2-SecurityGroup
+            SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 80
+                ToPort: 80
+                CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+              - IpProtocol: tcp
+                FromPort: 80
+                ToPort: 80
+                CidrIp: 0.0.0.0/0
+            Tags:
+              - Key: FOO
+                Value: BAR
+            VpcId: vpc-1234567890abcde

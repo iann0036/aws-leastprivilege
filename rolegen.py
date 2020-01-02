@@ -5,6 +5,8 @@ from cfn_flip import to_json
 
 class InvalidArguments(Exception):
     pass
+
+
 class InvalidTemplate(Exception):
     pass
 
@@ -13,7 +15,8 @@ class RoleGen:
     def __init__(self, args):
         self.input_file = args.input_file
         self.stack_name = args.stack_name
-        self.region = args.region
+        self.skip_update_policy = args.skip_update_policy
+        self.region = args.region or boto3.session.Session().region_name or 'us-east-1'
 
         self.cfnclient = boto3.client(
             'cloudformation', region_name=self.region)
@@ -75,8 +78,8 @@ class RoleGen:
                     relpath = relpath[pathpart]
                 else:
                     return notfoundvalue
-            
-            if isinstance(relpath, str): # TODO: Other primitive types
+
+            if isinstance(relpath, str):  # TODO: Other primitive types
                 value = relpath
             elif isinstance(relpath, list):
                 for listitem in relpath:
@@ -86,17 +89,38 @@ class RoleGen:
 
         return value
 
+    def _get_property_array_length(self, res, notfoundvalue, *propertypath):
+        value = 0
+
+        if "Properties" in res:
+            relpath = res["Properties"]
+            for pathpart in propertypath:
+                if pathpart in relpath:
+                    relpath = relpath[pathpart]
+                else:
+                    return notfoundvalue
+
+            if isinstance(relpath, list):
+                value = len(relpath)
+
+        return value
+
     def get_permissions(self, resname, res):
         if res["Type"] == "AWS::Lambda::Function":
-            functionname = self._get_property_or_default(res, "*", "FunctionName")
+            functionname = self._get_property_or_default(
+                res, "*", "FunctionName")
             role = self._get_property_or_default(res, "*", "Role")
-            s3bucket = self._get_property_or_default(res, None, "Code", "S3Bucket")
+            s3bucket = self._get_property_or_default(
+                res, None, "Code", "S3Bucket")
             s3key = self._get_property_or_default(res, None, "Code", "S3Key")
             kmskeyarn = self._get_property_or_default(res, None, "KmsKeyArn")
-            reservedconcurrentexecutions = self._get_property_or_default(res, None, "ReservedConcurrentExecutions")
+            reservedconcurrentexecutions = self._get_property_or_default(
+                res, None, "ReservedConcurrentExecutions")
             layers = self._get_property_or_default(res, None, "Layers")
-            securitygroupids = self._get_property_or_default(res, None, "VpcConfig", "SecurityGroupIds")
-            subnetids = self._get_property_or_default(res, None, "VpcConfig", "SubnetIds")
+            securitygroupids = self._get_property_or_default(
+                res, None, "VpcConfig", "SecurityGroupIds")
+            subnetids = self._get_property_or_default(
+                res, None, "VpcConfig", "SubnetIds")
 
             self.complex_permissions.append({
                 'Sid': resname + '-create1',
@@ -175,14 +199,15 @@ class RoleGen:
                 ],
                 'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
             })
-            self.complex_permissions.append({
-                'Sid': resname + '-update1',
-                'Effect': 'Allow',
-                'Action': [
-                    'lambda:UpdateFunctionConfiguration'
-                ],
-                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            })
+            if not self.skip_update_policy:
+                self.complex_permissions.append({
+                    'Sid': resname + '-update1',
+                    'Effect': 'Allow',
+                    'Action': [
+                        'lambda:UpdateFunctionConfiguration'
+                    ],
+                    'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+                })
             self.complex_permissions.append({
                 'Sid': resname + '-delete1',
                 'Effect': 'Allow',
@@ -200,6 +225,86 @@ class RoleGen:
                     ],
                     'Resource': '*'
                 })
+        elif res["Type"] == "AWS::EC2::SecurityGroup":
+            vpcid = self._get_property_or_default(res, None, "VpcId")
+            securitygroupingress_len = self._get_property_array_length(res, None, "SecurityGroupIngress")
+            securitygroupegress_len = self._get_property_array_length(res, None, "SecurityGroupEgress")
+            tags_len = self._get_property_array_length(res, None, "Tags")
+
+            self.complex_permissions.append({
+                'Sid': resname + '-create1',
+                'Effect': 'Allow',
+                'Action': [
+                    'ec2:DescribeSecurityGroups',
+                    'ec2:CreateSecurityGroup'
+                ],
+                'Resource': '*'
+            })
+            if securitygroupegress_len:
+                # Explanation: when a security group is created in a VPC, the default Egress is 0.0.0.0/0 Allow
+                # so cfn will perform a RevokeSecurityGroupEgress immediately after create
+                self.complex_permissions.append({
+                    'Sid': resname + '-create2',
+                    'Effect': 'Allow',
+                    'Action': [
+                        'ec2:AuthorizeSecurityGroupEgress',
+                        'ec2:RevokeSecurityGroupEgress'
+                    ],
+                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+                })
+            # Explanation: will always tag with CloudFormation tags
+            self.complex_permissions.append({
+                'Sid': resname + '-create3',
+                'Effect': 'Allow',
+                'Action': [
+                    'ec2:CreateTags'
+                ],
+                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+            })
+            if securitygroupingress_len:
+                self.complex_permissions.append({
+                    'Sid': resname + '-create4',
+                    'Effect': 'Allow',
+                    'Action': [
+                        'ec2:AuthorizeSecurityGroupIngress'
+                    ],
+                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+                })
+                if not self.skip_update_policy:
+                    self.complex_permissions.append({
+                        'Sid': resname + '-update1',
+                        'Effect': 'Allow',
+                        'Action': [
+                            'ec2:RevokeSecurityGroupIngress'
+                        ],
+                        'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+                    })
+            if tags_len and not self.skip_update_policy:
+                self.complex_permissions.append({
+                    'Sid': resname + '-update2',
+                    'Effect': 'Allow',
+                    'Action': [
+                        'ec2:DeleteTags'
+                    ],
+                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+                })
+            else:
+                self.complex_permissions.append({
+                    'Sid': resname + '-delete1',
+                    'Effect': 'Allow',
+                    'Action': [
+                        'ec2:DeleteTags'
+                    ],
+                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+                })
+            self.complex_permissions.append({
+                'Sid': resname + '-delete2',
+                'Effect': 'Allow',
+                'Action': [
+                    'ec2:DeleteSecurityGroup'
+                ],
+                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+            })
         else:
             self.get_remote_permissions_for_type(res["Type"])
 

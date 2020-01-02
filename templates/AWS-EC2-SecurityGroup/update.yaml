@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-EC2-SecurityGroup
+Resources:
+    SecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            GroupName: svcrolegen-AWS-EC2-SecurityGroup
+            GroupDescription: svcrolegen-AWS-EC2-SecurityGroup
+            SecurityGroupIngress:
+              - IpProtocol: tcp
+                FromPort: 443
+                ToPort: 443
+                CidrIp: 0.0.0.0/0
+            SecurityGroupEgress:
+              - IpProtocol: tcp
+                FromPort: 443
+                ToPort: 443
+                CidrIp: 0.0.0.0/0
+            Tags:
+              - Key: FOO2
+                Value: BAR2
+            VpcId: !ImportValue svcrolegensupport-AWS-EC2-SecurityGroup-VPC
