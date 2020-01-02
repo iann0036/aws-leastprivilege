@@ -11,6 +11,8 @@ Policies will be created with data following the below preference:
 
 ## Usage
 
+### Basic Example
+
 ```
 $ python3 index.py -i test.yml
 
@@ -77,3 +79,23 @@ WARNING: Skipped the following types: AWS::S3::Bucket
     }
 }
 ```
+
+### Options
+
+The following command line arguments are available:
+
+#### -i, --input-filename <filename>
+
+The filename of a local CloudFormation template file to analyze. You must specify either this option or `--stack-name`.
+
+#### --stack-name <stackname>
+
+The name of a deployed CloudFormation stack to analyze. You must specify either this option or `-i, --input-filename`.
+
+#### --skip-update-policy
+
+When specified, no policies relating to stack updates (that don't trigger a resource replacement) will be included in the output. The default behaviour will include the policies for stack updates.
+
+#### --region <name>
+
+Overrides the region to specify in policy outputs and when retrieving deployed templates. By default, the region will be retrieved using the [default precedence](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#configuring-credentials) for Boto3.
