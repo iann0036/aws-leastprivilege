@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ ! -d "AWS-Lambda-Function" ]; then
-    echo "You must run this script from within the templates/ directory"
+    echo "You must run this script from within the tests/ directory"
     exit
 fi
 

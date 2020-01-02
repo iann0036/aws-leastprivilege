@@ -1,0 +1,83 @@
+from mappings.base import BasePermissions
+
+class AWSEC2SecurityGroupPermissions(BasePermissions):
+    def get_permissions(self, resname, res):
+        vpcid = self._get_property_or_default(res, None, "VpcId")
+        securitygroupingress_len = self._get_property_array_length(res, None, "SecurityGroupIngress")
+        securitygroupegress_len = self._get_property_array_length(res, None, "SecurityGroupEgress")
+        tags_len = self._get_property_array_length(res, None, "Tags")
+
+        self.permissions.append({
+            'Sid': resname + '-create1',
+            'Effect': 'Allow',
+            'Action': [
+                'ec2:DescribeSecurityGroups',
+                'ec2:CreateSecurityGroup'
+            ],
+            'Resource': '*'
+        })
+        if securitygroupegress_len:
+            # Explanation: when a security group is created in a VPC, the default Egress is 0.0.0.0/0 Allow
+            # so cfn will perform a RevokeSecurityGroupEgress immediately after create
+            self.permissions.append({
+                'Sid': resname + '-create2',
+                'Effect': 'Allow',
+                'Action': [
+                    'ec2:AuthorizeSecurityGroupEgress',
+                    'ec2:RevokeSecurityGroupEgress'
+                ],
+                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+            })
+        # Explanation: will always tag with CloudFormation tags
+        self.permissions.append({
+            'Sid': resname + '-create3',
+            'Effect': 'Allow',
+            'Action': [
+                'ec2:CreateTags'
+            ],
+            'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+        })
+        if securitygroupingress_len:
+            self.permissions.append({
+                'Sid': resname + '-create4',
+                'Effect': 'Allow',
+                'Action': [
+                    'ec2:AuthorizeSecurityGroupIngress'
+                ],
+                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+            })
+            if not self.skip_update_policy:
+                self.permissions.append({
+                    'Sid': resname + '-update1',
+                    'Effect': 'Allow',
+                    'Action': [
+                        'ec2:RevokeSecurityGroupIngress'
+                    ],
+                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+                })
+        if tags_len and not self.skip_update_policy:
+            self.permissions.append({
+                'Sid': resname + '-update2',
+                'Effect': 'Allow',
+                'Action': [
+                    'ec2:DeleteTags'
+                ],
+                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+            })
+        else:
+            self.permissions.append({
+                'Sid': resname + '-delete1',
+                'Effect': 'Allow',
+                'Action': [
+                    'ec2:DeleteTags'
+                ],
+                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+            })
+        self.permissions.append({
+            'Sid': resname + '-delete2',
+            'Effect': 'Allow',
+            'Action': [
+                'ec2:DeleteSecurityGroup'
+            ],
+            'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
+        })

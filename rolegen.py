@@ -1,6 +1,9 @@
 import boto3
 import json
+import sys
 from cfn_flip import to_json
+from mappings.ec2 import *
+from mappings.awslambda import *
 
 
 class InvalidArguments(Exception):
@@ -59,8 +62,11 @@ class RoleGen:
         }
 
         if len(self.skipped_types) > 0:
-            print("WARNING: Skipped the following types: {}\n".format(
+            sys.stderr.write("WARNING: Skipped the following types: {}\n".format(
                 ", ".join(list(set(self.skipped_types)))))
+
+        if len(json.dumps(policy, separators=(',', ': '))) > 10240:
+            sys.stderr.write("WARNING: The generated policy size is greater than the maximum 10240 character limit\n")
         
         print(json.dumps(policy, indent=4, separators=(',', ': ')))
 
@@ -102,205 +108,9 @@ class RoleGen:
         return value
 
     def get_permissions(self, resname, res):
-        if res["Type"] == "AWS::Lambda::Function":
-            functionname = self._get_property_or_default(
-                res, "*", "FunctionName")
-            role = self._get_property_or_default(res, "*", "Role")
-            s3bucket = self._get_property_or_default(
-                res, None, "Code", "S3Bucket")
-            s3key = self._get_property_or_default(res, None, "Code", "S3Key")
-            kmskeyarn = self._get_property_or_default(res, None, "KmsKeyArn")
-            reservedconcurrentexecutions = self._get_property_or_default(
-                res, None, "ReservedConcurrentExecutions")
-            layers = self._get_property_or_default(res, None, "Layers")
-            securitygroupids = self._get_property_or_default(
-                res, None, "VpcConfig", "SecurityGroupIds")
-            subnetids = self._get_property_or_default(
-                res, None, "VpcConfig", "SubnetIds")
-
-            self.permissions.append({
-                'Sid': resname + '-create1',
-                'Effect': 'Allow',
-                'Action': [
-                    'lambda:CreateFunction'
-                ],
-                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            })
-            self.permissions.append({
-                'Sid': resname + '-create2',
-                'Effect': 'Allow',
-                'Action': [
-                    'iam:PassRole'
-                ],
-                'Resource': role,
-                'Condition': {
-                    'StringEquals': {
-                        'iam:PassedToService': 'lambda.amazonaws.com'
-                    }
-                }
-            })
-            if s3bucket and s3key:
-                self.permissions.append({
-                    'Sid': resname + '-create3',
-                    'Effect': 'Allow',
-                    'Action': [
-                        's3:GetObject'
-                    ],
-                    'Resource': 'arn:aws:s3:::{}/{}'.format(s3bucket, s3key)
-                })
-            if kmskeyarn:
-                self.permissions.append({
-                    'Sid': resname + '-create4',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'kms:Encrypt',
-                        'kms:CreateGrant'
-                    ],
-                    'Resource': kmskeyarn
-                })
-            if reservedconcurrentexecutions:
-                self.permissions.append({
-                    'Sid': resname + '-create5',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'lambda:PutFunctionConcurrency'
-                    ],
-                    'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-                })
-            if layers:
-                self.permissions.append({
-                    'Sid': resname + '-create6',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'lambda:GetLayerVersion'
-                    ],
-                    'Resource': layers
-                })
-            if securitygroupids and subnetids:
-                self.permissions.append({
-                    'Sid': resname + '-create7',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'ec2:DescribeVpcs',
-                        'ec2:DescribeSubnets',
-                        'ec2:DescribeSecurityGroups'
-                    ],
-                    'Resource': '*'
-                })
-            self.permissions.append({
-                'Sid': resname + '-createnm1',
-                'Effect': 'Allow',
-                'Action': [
-                    'lambda:GetFunction'
-                ],
-                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            })
-            if not self.skip_update_policy:
-                self.permissions.append({
-                    'Sid': resname + '-update1',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'lambda:UpdateFunctionConfiguration'
-                    ],
-                    'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-                })
-            self.permissions.append({
-                'Sid': resname + '-delete1',
-                'Effect': 'Allow',
-                'Action': [
-                    'lambda:DeleteFunction'
-                ],
-                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            })
-            if securitygroupids and subnetids:
-                self.permissions.append({
-                    'Sid': resname + '-delete2',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'ec2:DescribeNetworkInterfaces'
-                    ],
-                    'Resource': '*'
-                })
-        elif res["Type"] == "AWS::EC2::SecurityGroup":
-            vpcid = self._get_property_or_default(res, None, "VpcId")
-            securitygroupingress_len = self._get_property_array_length(res, None, "SecurityGroupIngress")
-            securitygroupegress_len = self._get_property_array_length(res, None, "SecurityGroupEgress")
-            tags_len = self._get_property_array_length(res, None, "Tags")
-
-            self.permissions.append({
-                'Sid': resname + '-create1',
-                'Effect': 'Allow',
-                'Action': [
-                    'ec2:DescribeSecurityGroups',
-                    'ec2:CreateSecurityGroup'
-                ],
-                'Resource': '*'
-            })
-            if securitygroupegress_len:
-                # Explanation: when a security group is created in a VPC, the default Egress is 0.0.0.0/0 Allow
-                # so cfn will perform a RevokeSecurityGroupEgress immediately after create
-                self.permissions.append({
-                    'Sid': resname + '-create2',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'ec2:AuthorizeSecurityGroupEgress',
-                        'ec2:RevokeSecurityGroupEgress'
-                    ],
-                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
-                })
-            # Explanation: will always tag with CloudFormation tags
-            self.permissions.append({
-                'Sid': resname + '-create3',
-                'Effect': 'Allow',
-                'Action': [
-                    'ec2:CreateTags'
-                ],
-                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
-            })
-            if securitygroupingress_len:
-                self.permissions.append({
-                    'Sid': resname + '-create4',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'ec2:AuthorizeSecurityGroupIngress'
-                    ],
-                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
-                })
-                if not self.skip_update_policy:
-                    self.permissions.append({
-                        'Sid': resname + '-update1',
-                        'Effect': 'Allow',
-                        'Action': [
-                            'ec2:RevokeSecurityGroupIngress'
-                        ],
-                        'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
-                    })
-            if tags_len and not self.skip_update_policy:
-                self.permissions.append({
-                    'Sid': resname + '-update2',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'ec2:DeleteTags'
-                    ],
-                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
-                })
-            else:
-                self.permissions.append({
-                    'Sid': resname + '-delete1',
-                    'Effect': 'Allow',
-                    'Action': [
-                        'ec2:DeleteTags'
-                    ],
-                    'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
-                })
-            self.permissions.append({
-                'Sid': resname + '-delete2',
-                'Effect': 'Allow',
-                'Action': [
-                    'ec2:DeleteSecurityGroup'
-                ],
-                'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
-            })
+        mapped_classname = "{}Permissions".format(str(res["Type"]).replace("::",""))
+        if mapped_classname in globals():
+            globals()[mapped_classname].get_permissions(self, resname, res)
         else:
             self.get_remote_permissions_for_type(resname, res["Type"])
 
