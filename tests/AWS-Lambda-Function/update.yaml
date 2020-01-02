@@ -14,7 +14,8 @@ Resources:
             Role: !ImportValue svcrolegensupport-AWS-Lambda-Function-Role
             Code: 
                 S3Bucket: ianmckay-ap-southeast-2
-                S3Key: emptyhandler.zip
+                S3Key: emptyhandler2.zip
+                S3ObjectVersion: 2nw9BLQRLDKbqF6eqQpeQUEW8PziuMRi
             Layers:
               - !ImportValue svcrolegensupport-AWS-Lambda-Function-Layer
             ReservedConcurrentExecutions: 1

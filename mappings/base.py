@@ -10,7 +10,7 @@ class BasePermissions:
                 else:
                     return notfoundvalue
 
-            if isinstance(relpath, str):  # TODO: Other primitive types
+            if isinstance(relpath, str) or isinstance(relpath, int): # TODO: Other primitive types
                 value = relpath
             elif isinstance(relpath, list):
                 for listitem in relpath:

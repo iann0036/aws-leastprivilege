@@ -1,0 +1,10 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Lambda-Version
+Resources:
+    LambdaVersion:
+        Type: AWS::Lambda::Version
+        Properties:
+            FunctionName: !ImportValue svcrolegensupport-AWS-Lambda-Version-LambdaFunction
+            Description: "svcrolegen-AWS-Lambda-Version"
+            ProvisionedConcurrencyConfig:
+                ProvisionedConcurrentExecutions: 1

@@ -2,6 +2,7 @@ import boto3
 import json
 import sys
 from cfn_flip import to_json
+
 from mappings.ec2 import *
 from mappings.awslambda import *
 

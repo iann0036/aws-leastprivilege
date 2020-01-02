@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Lambda-Version-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-Lambda-Version-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: LambdaVersion-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - lambda:ListVersionsByFunction
+                          - lambda:PublishVersion
+                          - lambda:GetProvisionedConcurrencyConfig
+                          - lambda:PutProvisionedConcurrencyConfig
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+              - PolicyName: LambdaVersion-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - lambda:DeleteFunction
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*:*

@@ -33,8 +33,20 @@ Resources:
                                 iam:PassedToService: lambda.amazonaws.com
                       - Effect: Allow
                         Action:
-                          - s3:GetObject
-                        Resource: arn:aws:s3:::ianmckay-ap-southeast-2/emptyhandler.zip
+                          - s3:GetObjectVersion
+                        Resource:
+                          - arn:aws:s3:::ianmckay-ap-southeast-2/emptyhandler.zip
+                        Condition:
+                            StringEquals:
+                                s3:VersionId: BQagbcbTk4J05XrPtGS2TsIjsb4jaSWx
+                      - Effect: Allow
+                        Action:
+                          - s3:GetObjectVersion
+                        Resource:
+                          - arn:aws:s3:::ianmckay-ap-southeast-2/emptyhandler2.zip
+                        Condition:
+                            StringEquals:
+                                s3:VersionId: 2nw9BLQRLDKbqF6eqQpeQUEW8PziuMRi
                       - Effect: Allow
                         Action:
                           - kms:Encrypt
@@ -77,6 +89,7 @@ Resources:
                       - Effect: Allow
                         Action:
                           - lambda:UpdateFunctionConfiguration
+                          - lambda:UpdateFunctionCode
                         Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
               - PolicyName: LambdaFunction-delete
                 PolicyDocument:

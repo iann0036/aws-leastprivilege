@@ -7,6 +7,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
         role = self._get_property_or_default(res, "*", "Role")
         s3bucket = self._get_property_or_default(res, None, "Code", "S3Bucket")
         s3key = self._get_property_or_default(res, None, "Code", "S3Key")
+        s3objectversion = self._get_property_or_default(res, None, "Code", "S3ObjectVersion")
         kmskeyarn = self._get_property_or_default(res, None, "KmsKeyArn")
         reservedconcurrentexecutions = self._get_property_or_default(res, None, "ReservedConcurrentExecutions")
         layers = self._get_property_or_default(res, None, "Layers")
@@ -14,7 +15,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
         subnetids = self._get_property_or_default(res, None, "VpcConfig", "SubnetIds")
 
         self.permissions.append({
-            'Sid': resname + '-create1',
+            'Sid': '{}-create1'.format(resname),
             'Effect': 'Allow',
             'Action': [
                 'lambda:CreateFunction'
@@ -22,7 +23,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
             'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
         })
         self.permissions.append({
-            'Sid': resname + '-create2',
+            'Sid': '{}-create2'.format(resname),
             'Effect': 'Allow',
             'Action': [
                 'iam:PassRole'
@@ -35,17 +36,32 @@ class AWSLambdaFunctionPermissions(BasePermissions):
             }
         })
         if s3bucket and s3key:
-            self.permissions.append({
-                'Sid': resname + '-create3',
-                'Effect': 'Allow',
-                'Action': [
-                    's3:GetObject'
-                ],
-                'Resource': 'arn:aws:s3:::{}/{}'.format(s3bucket, s3key)
-            })
+            if s3objectversion:
+                self.permissions.append({
+                    'Sid': '{}-create3'.format(resname),
+                    'Effect': 'Allow',
+                    'Action': [
+                        's3:GetObjectVersion'
+                    ],
+                    'Resource': 'arn:aws:s3:::{}/{}'.format(s3bucket, s3key),
+                    'Condition': {
+                        'StringEquals': {
+                            's3:VersionId': s3objectversion
+                        }
+                    }
+                })
+            else:
+                self.permissions.append({
+                    'Sid': '{}-create4'.format(resname),
+                    'Effect': 'Allow',
+                    'Action': [
+                        's3:GetObject'
+                    ],
+                    'Resource': 'arn:aws:s3:::{}/{}'.format(s3bucket, s3key)
+                })
         if kmskeyarn:
             self.permissions.append({
-                'Sid': resname + '-create4',
+                'Sid': '{}-create5'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'kms:Encrypt',
@@ -55,7 +71,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
             })
         if reservedconcurrentexecutions:
             self.permissions.append({
-                'Sid': resname + '-create5',
+                'Sid': '{}-create6'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'lambda:PutFunctionConcurrency'
@@ -64,7 +80,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
             })
         if layers:
             self.permissions.append({
-                'Sid': resname + '-create6',
+                'Sid': '{}-create7'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'lambda:GetLayerVersion'
@@ -73,7 +89,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
             })
         if securitygroupids and subnetids:
             self.permissions.append({
-                'Sid': resname + '-create7',
+                'Sid': '{}-create8'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'ec2:DescribeVpcs',
@@ -83,7 +99,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
                 'Resource': '*'
             })
         self.permissions.append({
-            'Sid': resname + '-createnm1',
+            'Sid': '{}-createnm1'.format(resname),
             'Effect': 'Allow',
             'Action': [
                 'lambda:GetFunction'
@@ -92,15 +108,16 @@ class AWSLambdaFunctionPermissions(BasePermissions):
         })
         if not self.skip_update_policy:
             self.permissions.append({
-                'Sid': resname + '-update1',
+                'Sid': '{}-update1'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
-                    'lambda:UpdateFunctionConfiguration'
+                    'lambda:UpdateFunctionConfiguration',
+                    'lambda:UpdateFunctionCode'
                 ],
                 'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
             })
         self.permissions.append({
-            'Sid': resname + '-delete1',
+            'Sid': '{}-delete1'.format(resname),
             'Effect': 'Allow',
             'Action': [
                 'lambda:DeleteFunction'
@@ -109,10 +126,43 @@ class AWSLambdaFunctionPermissions(BasePermissions):
         })
         if securitygroupids and subnetids:
             self.permissions.append({
-                'Sid': resname + '-delete2',
+                'Sid': '{}-delete2'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'ec2:DescribeNetworkInterfaces'
                 ],
                 'Resource': '*'
             })
+
+class AWSLambdaVersionPermissions(BasePermissions):
+    def get_permissions(self, resname, res):
+        functionname = self._get_property_or_default(res, "*", "FunctionName").split(":").pop() # could be an arn or partial arn
+        provisionedconcurrentexecutions = self._get_property_or_default(res, None, "ProvisionedConcurrencyConfig", "ProvisionedConcurrentExecutions")
+
+        self.permissions.append({
+            'Sid': '{}-create1'.format(resname),
+            'Effect': 'Allow',
+            'Action': [
+                'lambda:ListVersionsByFunction',
+                'lambda:PublishVersion'
+            ],
+            'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+        })
+        if provisionedconcurrentexecutions:
+            self.permissions.append({
+                'Sid': '{}-create2'.format(resname),
+                'Effect': 'Allow',
+                'Action': [
+                    'lambda:GetProvisionedConcurrencyConfig',
+                    'lambda:PutProvisionedConcurrencyConfig'
+                ],
+                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+            })
+        self.permissions.append({
+            'Sid': '{}-delete1'.format(resname),
+            'Effect': 'Allow',
+            'Action': [
+                'lambda:DeleteFunction'
+            ],
+            'Resource': 'arn:aws:lambda:{}:{}:function:{}:*'.format(self.region, self.accountid, functionname)
+        })

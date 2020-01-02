@@ -8,7 +8,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
         tags_len = self._get_property_array_length(res, None, "Tags")
 
         self.permissions.append({
-            'Sid': resname + '-create1',
+            'Sid': '{}-create1'.format(resname),
             'Effect': 'Allow',
             'Action': [
                 'ec2:DescribeSecurityGroups',
@@ -20,7 +20,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
             # Explanation: when a security group is created in a VPC, the default Egress is 0.0.0.0/0 Allow
             # so cfn will perform a RevokeSecurityGroupEgress immediately after create
             self.permissions.append({
-                'Sid': resname + '-create2',
+                'Sid': '{}-create2'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'ec2:AuthorizeSecurityGroupEgress',
@@ -30,7 +30,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
             })
         # Explanation: will always tag with CloudFormation tags
         self.permissions.append({
-            'Sid': resname + '-create3',
+            'Sid': '{}-create3'.format(resname),
             'Effect': 'Allow',
             'Action': [
                 'ec2:CreateTags'
@@ -39,7 +39,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
         })
         if securitygroupingress_len:
             self.permissions.append({
-                'Sid': resname + '-create4',
+                'Sid': '{}-create4'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'ec2:AuthorizeSecurityGroupIngress'
@@ -48,7 +48,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
             })
             if not self.skip_update_policy:
                 self.permissions.append({
-                    'Sid': resname + '-update1',
+                    'Sid': '{}-update1'.format(resname),
                     'Effect': 'Allow',
                     'Action': [
                         'ec2:RevokeSecurityGroupIngress'
@@ -57,7 +57,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
                 })
         if tags_len and not self.skip_update_policy:
             self.permissions.append({
-                'Sid': resname + '-update2',
+                'Sid': '{}-update2'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'ec2:DeleteTags'
@@ -66,7 +66,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
             })
         else:
             self.permissions.append({
-                'Sid': resname + '-delete1',
+                'Sid': '{}-delete1'.format(resname),
                 'Effect': 'Allow',
                 'Action': [
                     'ec2:DeleteTags'
@@ -74,7 +74,7 @@ class AWSEC2SecurityGroupPermissions(BasePermissions):
                 'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
             })
         self.permissions.append({
-            'Sid': resname + '-delete2',
+            'Sid': '{}-delete2'.format(resname),
             'Effect': 'Allow',
             'Action': [
                 'ec2:DeleteSecurityGroup'
