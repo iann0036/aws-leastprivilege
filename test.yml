@@ -1,6 +1,39 @@
 Resources:
-    tmp:
+    S3Bucket:
         Type: AWS::S3::Bucket
     
-    tmp2:
+    AccessAnalyzer:
         Type: AWS::AccessAnalyzer::Analyzer
+
+    LambdaFunction:
+        Type: AWS::Lambda::Function
+        Properties:
+            DeadLetterConfig:
+                TargetArn: arn:aws:sqs:ap-southeast-2:123456789012:myqueue
+            Environment:
+                Variables:
+                    FOO: BAR
+            Handler: index.handler
+            KmsKeyArn: arn:aws:kms:ap-southeast-2:123456789012:key/123e4567-e89b-12d3-a456-426655440000
+            Role: arn:aws:iam::123456789012:role/S3Access
+            Code: 
+                S3Bucket: ianmckay-ap-southeast-2
+                S3Key: emptyhandler.zip
+            Layers:
+              - arn:aws:lambda:ap-southeast-2:123456789012:layer:layer1:1
+              - arn:aws:lambda:ap-southeast-2:123456789012:layer:layer2:1
+            ReservedConcurrentExecutions: 1
+            Runtime: nodejs12.x
+            Timeout: 10
+            TracingConfig:
+                Mode: Active
+            Tags:
+              - Key: FOO
+                Value: BAR
+            VpcConfig:
+                SecurityGroupIds:
+                  - sg-12345678901234567
+                  - sg-12345678901234568
+                SubnetIds:
+                  - subnet-12345678901234567
+                  - subnet-12345678901234568

@@ -1,3 +1,5 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Lambda-Function-role
 Resources:
     CloudFormationServiceRole:
         Type: AWS::IAM::Role
@@ -22,9 +24,6 @@ Resources:
                         Action:
                           - lambda:CreateFunction
                         Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
-                        Condition:
-                            "Null":
-                                lambda:Layer: true
                       - Effect: Allow
                         Action:
                           - iam:PassRole
@@ -36,6 +35,27 @@ Resources:
                         Action:
                           - s3:GetObject
                         Resource: arn:aws:s3:::ianmckay-ap-southeast-2/emptyhandler.zip
+                      - Effect: Allow
+                        Action:
+                          - kms:Encrypt
+                          - kms:CreateGrant
+                        Resource: !ImportValue svcrolegensupport-AWS-Lambda-Function-Key
+                      - Effect: Allow
+                        Action:
+                          - lambda:PutFunctionConcurrency
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+                      - Effect: Allow
+                        Action:
+                          - lambda:GetLayerVersion
+                        Resource:
+                          - !ImportValue svcrolegensupport-AWS-Lambda-Function-Layer
+                      - Effect: Allow
+                        Action:
+                          - ec2:DescribeVpcs
+                          - ec2:DescribeSecurityGroups
+                          - ec2:DescribeSubnets
+                          - ec2:DescribeNetworkInterfaces
+                        Resource: '*'
               - PolicyName: LambdaFunction-createnm
                 PolicyDocument:
                     Version: '2012-10-17'
@@ -43,6 +63,12 @@ Resources:
                       - Effect: Allow
                         Action:
                           - lambda:GetFunction
+                        Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
+                      - Effect: Allow
+                        Action:
+                          - lambda:ListTags
+                          - lambda:TagResource
+                          - lambda:UntagResource
                         Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
               - PolicyName: LambdaFunction-update
                 PolicyDocument:

@@ -1,3 +1,5 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Lambda-Function-support
 Resources:
     LambdaFunctionExecutionRole:
         Type: AWS::IAM::Role
@@ -25,9 +27,88 @@ Resources:
                         Action:
                           - xray:PutTraceSegments
                         Resource: '*'
+                      - Effect: Allow
+                        Action:
+                          - sqs:SendMessage
+                        Resource: '*'
+                      - Effect: Allow
+                        Action:
+                          - ec2:CreateNetworkInterface
+                          - ec2:DescribeNetworkInterfaces
+                          - ec2:DeleteNetworkInterface
+                        Resource: '*'
+
+    Queue: 
+        Type: AWS::SQS::Queue
+
+    Key:
+        Type: AWS::KMS::Key
+        Properties:
+            KeyPolicy:
+                Version: '2012-10-17'
+                Id: root
+                Statement:
+                  - Sid: Enable IAM User Permissions
+                    Effect: Allow
+                    Principal:
+                        AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+                    Action: 'kms:*'
+                    Resource: '*'
+
+    Layer:
+        Type: AWS::Lambda::LayerVersion
+        Properties:
+            CompatibleRuntimes:
+              - nodejs12.x
+            Content:
+                S3Bucket: ianmckay-ap-southeast-2
+                S3Key: emptyhandler.zip
+            LayerName: my-layer
+
+    VPC:
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock: 10.0.0.0/24
+    
+    Subnet:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            CidrBlock: 10.0.0.0/24
+    
+    SecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            VpcId: !Ref VPC
+            GroupDescription: "svcrolegen-AWS-Lambda-Function-SecurityGroup"
 
 Outputs:
     LambdaFunctionExecutionRoleArn:
         Value: !GetAtt LambdaFunctionExecutionRole.Arn
         Export:
             Name: svcrolegensupport-AWS-Lambda-Function-Role
+    
+    Queue:
+        Value: !GetAtt Queue.Arn
+        Export:
+            Name: svcrolegensupport-AWS-Lambda-Function-Queue
+    
+    Key:
+        Value: !GetAtt Key.Arn
+        Export:
+            Name: svcrolegensupport-AWS-Lambda-Function-Key
+    
+    Layer:
+        Value: !Ref Layer
+        Export:
+            Name: svcrolegensupport-AWS-Lambda-Function-Layer
+    
+    Subnet:
+        Value: !Ref Subnet
+        Export:
+            Name: svcrolegensupport-AWS-Lambda-Function-Subnet
+    
+    SecurityGroup:
+        Value: !Ref SecurityGroup
+        Export:
+            Name: svcrolegensupport-AWS-Lambda-Function-SecurityGroup

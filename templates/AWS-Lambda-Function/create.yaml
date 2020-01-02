@@ -4,12 +4,29 @@ Resources:
     LambdaFunction:
         Type: AWS::Lambda::Function
         Properties:
+            DeadLetterConfig:
+                TargetArn: !ImportValue svcrolegensupport-AWS-Lambda-Function-Queue
+            Environment:
+                Variables:
+                    FOO: BAR
             Handler: index.handler
+            KmsKeyArn: !ImportValue svcrolegensupport-AWS-Lambda-Function-Key
             Role: !ImportValue svcrolegensupport-AWS-Lambda-Function-Role
             Code: 
                 S3Bucket: ianmckay-ap-southeast-2
                 S3Key: emptyhandler.zip
+            Layers:
+              - !ImportValue svcrolegensupport-AWS-Lambda-Function-Layer
+            ReservedConcurrentExecutions: 1
             Runtime: nodejs12.x
             Timeout: 10
             TracingConfig:
                 Mode: Active
+            Tags:
+              - Key: FOO
+                Value: BAR
+            VpcConfig:
+                SecurityGroupIds:
+                  - !ImportValue svcrolegensupport-AWS-Lambda-Function-SecurityGroup
+                SubnetIds:
+                  - !ImportValue svcrolegensupport-AWS-Lambda-Function-Subnet
