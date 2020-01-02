@@ -20,8 +20,7 @@ class RoleGen:
 
         self.cfnclient = boto3.client(
             'cloudformation', region_name=self.region)
-        self.simple_permissions = []
-        self.complex_permissions = []
+        self.permissions = []
         self.skipped_types = []
         self.accountid = boto3.client(
             'sts', region_name=self.region).get_caller_identity()['Account']
@@ -42,21 +41,11 @@ class RoleGen:
         for resname, res in template["Resources"].items():
             self.get_permissions(resname, res)
 
-        statement = []
-        if len(self.simple_permissions):
-            statement.append({
-                "Sid": "generic",
-                "Effect": "Allow",
-                "Action": list(set(self.simple_permissions)),
-                "Resource": "*"
-            })
-        statement += self.complex_permissions
-
         policy = {
             "PolicyName": "root",
             "PolicyDocument": {
                 "Version": "2012-10-17",
-                "Statement": statement
+                "Statement": self.permissions
             }
         }
 
@@ -65,8 +54,6 @@ class RoleGen:
                 ", ".join(list(set(self.skipped_types)))))
 
         print(json.dumps(policy, indent=4, separators=(',', ': ')))
-
-        list(set(self.simple_permissions))
 
     def _get_property_or_default(self, res, notfoundvalue, *propertypath):
         value = '*'
@@ -122,7 +109,7 @@ class RoleGen:
             subnetids = self._get_property_or_default(
                 res, None, "VpcConfig", "SubnetIds")
 
-            self.complex_permissions.append({
+            self.permissions.append({
                 'Sid': resname + '-create1',
                 'Effect': 'Allow',
                 'Action': [
@@ -130,7 +117,7 @@ class RoleGen:
                 ],
                 'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
             })
-            self.complex_permissions.append({
+            self.permissions.append({
                 'Sid': resname + '-create2',
                 'Effect': 'Allow',
                 'Action': [
@@ -144,7 +131,7 @@ class RoleGen:
                 }
             })
             if s3bucket and s3key:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-create3',
                     'Effect': 'Allow',
                     'Action': [
@@ -153,7 +140,7 @@ class RoleGen:
                     'Resource': 'arn:aws:s3:::{}/{}'.format(s3bucket, s3key)
                 })
             if kmskeyarn:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-create4',
                     'Effect': 'Allow',
                     'Action': [
@@ -163,7 +150,7 @@ class RoleGen:
                     'Resource': kmskeyarn
                 })
             if reservedconcurrentexecutions:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-create5',
                     'Effect': 'Allow',
                     'Action': [
@@ -172,7 +159,7 @@ class RoleGen:
                     'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
                 })
             if layers:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-create6',
                     'Effect': 'Allow',
                     'Action': [
@@ -181,7 +168,7 @@ class RoleGen:
                     'Resource': layers
                 })
             if securitygroupids and subnetids:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-create7',
                     'Effect': 'Allow',
                     'Action': [
@@ -191,7 +178,7 @@ class RoleGen:
                     ],
                     'Resource': '*'
                 })
-            self.complex_permissions.append({
+            self.permissions.append({
                 'Sid': resname + '-createnm1',
                 'Effect': 'Allow',
                 'Action': [
@@ -200,7 +187,7 @@ class RoleGen:
                 'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
             })
             if not self.skip_update_policy:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-update1',
                     'Effect': 'Allow',
                     'Action': [
@@ -208,7 +195,7 @@ class RoleGen:
                     ],
                     'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
                 })
-            self.complex_permissions.append({
+            self.permissions.append({
                 'Sid': resname + '-delete1',
                 'Effect': 'Allow',
                 'Action': [
@@ -217,7 +204,7 @@ class RoleGen:
                 'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
             })
             if securitygroupids and subnetids:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-delete2',
                     'Effect': 'Allow',
                     'Action': [
@@ -231,7 +218,7 @@ class RoleGen:
             securitygroupegress_len = self._get_property_array_length(res, None, "SecurityGroupEgress")
             tags_len = self._get_property_array_length(res, None, "Tags")
 
-            self.complex_permissions.append({
+            self.permissions.append({
                 'Sid': resname + '-create1',
                 'Effect': 'Allow',
                 'Action': [
@@ -243,7 +230,7 @@ class RoleGen:
             if securitygroupegress_len:
                 # Explanation: when a security group is created in a VPC, the default Egress is 0.0.0.0/0 Allow
                 # so cfn will perform a RevokeSecurityGroupEgress immediately after create
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-create2',
                     'Effect': 'Allow',
                     'Action': [
@@ -253,7 +240,7 @@ class RoleGen:
                     'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
                 })
             # Explanation: will always tag with CloudFormation tags
-            self.complex_permissions.append({
+            self.permissions.append({
                 'Sid': resname + '-create3',
                 'Effect': 'Allow',
                 'Action': [
@@ -262,7 +249,7 @@ class RoleGen:
                 'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
             })
             if securitygroupingress_len:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-create4',
                     'Effect': 'Allow',
                     'Action': [
@@ -271,7 +258,7 @@ class RoleGen:
                     'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
                 })
                 if not self.skip_update_policy:
-                    self.complex_permissions.append({
+                    self.permissions.append({
                         'Sid': resname + '-update1',
                         'Effect': 'Allow',
                         'Action': [
@@ -280,7 +267,7 @@ class RoleGen:
                         'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
                     })
             if tags_len and not self.skip_update_policy:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-update2',
                     'Effect': 'Allow',
                     'Action': [
@@ -289,7 +276,7 @@ class RoleGen:
                     'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
                 })
             else:
-                self.complex_permissions.append({
+                self.permissions.append({
                     'Sid': resname + '-delete1',
                     'Effect': 'Allow',
                     'Action': [
@@ -297,7 +284,7 @@ class RoleGen:
                     ],
                     'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
                 })
-            self.complex_permissions.append({
+            self.permissions.append({
                 'Sid': resname + '-delete2',
                 'Effect': 'Allow',
                 'Action': [
@@ -306,9 +293,9 @@ class RoleGen:
                 'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
             })
         else:
-            self.get_remote_permissions_for_type(res["Type"])
+            self.get_remote_permissions_for_type(resname, res["Type"])
 
-    def get_remote_permissions_for_type(self, restype):
+    def get_remote_permissions_for_type(self, resname, restype):
         remote_type_def = self.cfnclient.describe_type(
             Type='RESOURCE',
             TypeName=restype
@@ -323,6 +310,16 @@ class RoleGen:
             self.skipped_types.append(restype)
             return
 
-        for handler in ["create", "delete", "list", "read", "update"]:
+        handler_types = ["create"]
+        if not self.skip_update_policy:
+            handler_types.append("update")
+        handler_types.append("delete") # ordering important
+
+        for handler in handler_types:
             if handler in type_schema["handlers"] and "permissions" in type_schema["handlers"][handler]:
-                self.simple_permissions += type_schema["handlers"][handler]["permissions"]
+                self.permissions.append({
+                    'Sid': '{}-{}1-reg'.format(resname, handler),
+                    'Effect': 'Allow',
+                    'Action': list(set(type_schema["handlers"][handler]["permissions"])),
+                    'Resource': '*'
+                })
