@@ -104,7 +104,7 @@ class AWSLambdaFunctionPermissions:
             ],
             'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
         })
-        if not self.skip_update_policy:
+        if not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update1'.format(resname),
                 'Effect': 'Allow',

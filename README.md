@@ -113,9 +113,13 @@ The filename of a local CloudFormation template file to analyze. You must specif
 
 The stack name or stack ID of a deployed CloudFormation stack to analyze. You must specify either this option or `-i, --input-filename`.
 
-#### --skip-update-policy
+#### --skip-update-actions
 
-When specified, no policies relating to stack updates (that don't trigger a resource replacement) will be included in the output. The default behaviour will include the policies for stack updates.
+When specified, no actions relating to stack updates (that don't trigger a resource replacement) will be included in the output. The default behaviour will include the actions for stack updates.
+
+#### --consolidate-policy
+
+When specified, the `Sid` fields will be removed and statements sharing the same attributes except `Action` will be combined.
 
 #### --region <name>
 

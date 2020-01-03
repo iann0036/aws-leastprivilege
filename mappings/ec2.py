@@ -44,7 +44,7 @@ class AWSEC2SecurityGroupPermissions:
                 ],
                 'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
             })
-            if not self.skip_update_policy:
+            if not self.skip_update_actions:
                 self.permissions.append({
                     'Sid': '{}-update1'.format(resname),
                     'Effect': 'Allow',
@@ -53,7 +53,7 @@ class AWSEC2SecurityGroupPermissions:
                     ],
                     'Resource': 'arn:aws:ec2:{}:{}:security-group/*'.format(self.region, self.accountid)
                 })
-        if tags_len and not self.skip_update_policy:
+        if tags_len and not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update2'.format(resname),
                 'Effect': 'Allow',

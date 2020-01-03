@@ -20,7 +20,8 @@ class RoleGen:
     def __init__(self, args):
         self.input_file = args.input_file
         self.stack_name = args.stack_name
-        self.skip_update_policy = args.skip_update_policy
+        self.skip_update_actions = args.skip_update_actions
+        self.consolidate_policy = args.consolidate_policy
         self.region = args.region or boto3.session.Session().region_name or 'us-east-1'
 
         self.cfnclient = boto3.client(
@@ -55,6 +56,9 @@ class RoleGen:
         for resname, res in template["Resources"].items():
             self.get_permissions(resname, res)
 
+        if self.consolidate_policy:
+            self._consolidate_permissions()
+
         policy = {
             "PolicyName": "root",
             "PolicyDocument": {
@@ -71,6 +75,35 @@ class RoleGen:
             sys.stderr.write("WARNING: The generated policy size is greater than the maximum 10240 character limit\n")
         
         print(json.dumps(policy, indent=4, separators=(',', ': ')))
+
+    def _consolidate_permissions(self):
+        # TODO: Consolidate for same action, different resource and for combining wildcard w/ specific
+        new_permissions = []
+        
+        while len(self.permissions):
+            permission = self.permissions.pop(0)
+            permission.pop('Sid', None)
+
+            i = 0
+            while i < len(self.permissions):
+                if (
+                    self.permissions[i]['Resource'] == permission['Resource'] and
+                    self.permissions[i]['Effect'] == permission['Effect'] and
+                    (
+                        ('Condition' not in self.permissions[i] and 'Condition' not in permission) or
+                        ('Condition' in self.permissions[i] and 'Condition' in permission and 
+                        self.permissions[i]['Condition'] == permission['Condition'])
+                    )
+                ):
+                    permission['Action'] += self.permissions[i]['Action']
+                    self.permissions.pop(i)
+                else:
+                    i += 1
+
+            permission['Action'] = list(set(permission['Action'])) # remove duplicates
+            new_permissions.append(permission)
+
+        self.permissions = new_permissions
 
     def _get_property_or_default(self, res, notfoundvalue, *propertypath):
         value = '*'
@@ -143,7 +176,7 @@ class RoleGen:
             return
 
         handler_types = ["create"]
-        if not self.skip_update_policy:
+        if not self.skip_update_actions:
             handler_types.append("update")
         handler_types.append("delete") # ordering important
 

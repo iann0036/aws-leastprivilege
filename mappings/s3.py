@@ -35,7 +35,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update1'.format(resname),
                 'Effect': 'Allow',
@@ -53,7 +53,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update2'.format(resname),
                 'Effect': 'Allow',
@@ -71,7 +71,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update3'.format(resname),
                 'Effect': 'Allow',
@@ -89,7 +89,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update4'.format(resname),
                 'Effect': 'Allow',
@@ -107,7 +107,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update5'.format(resname),
                 'Effect': 'Allow',
@@ -125,7 +125,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update6'.format(resname),
                 'Effect': 'Allow',
@@ -143,7 +143,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update7'.format(resname),
                 'Effect': 'Allow',
@@ -161,7 +161,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update8'.format(resname),
                 'Effect': 'Allow',
@@ -179,7 +179,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update9'.format(resname),
                 'Effect': 'Allow',
@@ -197,7 +197,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update10'.format(resname),
                 'Effect': 'Allow',
@@ -224,7 +224,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update11'.format(resname),
                 'Effect': 'Allow',
@@ -242,7 +242,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update12'.format(resname),
                 'Effect': 'Allow',
@@ -260,7 +260,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update13'.format(resname),
                 'Effect': 'Allow',
@@ -291,7 +291,7 @@ class AWSS3BucketPermissions:
                     }
                 }
             })
-        elif not self.skip_update_policy:
+        elif not self.skip_update_actions:
             self.permissions.append({
                 'Sid': '{}-update14'.format(resname),
                 'Effect': 'Allow',
