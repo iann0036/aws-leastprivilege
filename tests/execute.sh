@@ -15,7 +15,15 @@ do
     fi
     aws cloudformation deploy --template-file $f/role.yaml --stack-name $f-role --capabilities CAPABILITY_NAMED_IAM --region ap-southeast-2
     aws cloudformation deploy --template-file $f/create.yaml --stack-name $f --capabilities CAPABILITY_NAMED_IAM --region ap-southeast-2 --role-arn arn:aws:iam::$ACCOUNT:role/$f-cfnservicerole
+    if test -f "$f/support2.yaml"; then
+        aws cloudformation deploy --template-file $f/support2.yaml --stack-name $f-support --capabilities CAPABILITY_NAMED_IAM --region ap-southeast-2
+    fi
     aws cloudformation deploy --template-file $f/update.yaml --stack-name $f --capabilities CAPABILITY_NAMED_IAM --region ap-southeast-2 --role-arn arn:aws:iam::$ACCOUNT:role/$f-cfnservicerole
+    if test -f "$f/support2.yaml"; then
+        echo "Rolling back dependency chain: $f"
+        aws cloudformation deploy --template-file $f/create.yaml --stack-name $f --capabilities CAPABILITY_NAMED_IAM --region ap-southeast-2 --role-arn arn:aws:iam::$ACCOUNT:role/$f-cfnservicerole
+        aws cloudformation deploy --template-file $f/support.yaml --stack-name $f-support --capabilities CAPABILITY_NAMED_IAM --region ap-southeast-2
+    fi
     echo "Deleting stack: $f"
     aws cloudformation delete-stack --stack-name $f --region ap-southeast-2
     aws cloudformation wait stack-delete-complete --stack-name $f --region ap-southeast-2

@@ -1,6 +1,4 @@
-from mappings.base import BasePermissions
-
-class AWSEC2SecurityGroupPermissions(BasePermissions):
+class AWSEC2SecurityGroupPermissions:
     def get_permissions(self, resname, res):
         vpcid = self._get_property_or_default(res, None, "VpcId")
         securitygroupingress_len = self._get_property_array_length(res, None, "SecurityGroupIngress")

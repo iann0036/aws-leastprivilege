@@ -5,6 +5,7 @@ from cfn_flip import to_json
 
 from mappings.ec2 import *
 from mappings.awslambda import *
+from mappings.s3 import *
 
 
 class InvalidArguments(Exception):
@@ -107,6 +108,17 @@ class RoleGen:
                 value = len(relpath)
 
         return value
+    
+    def _get_property_exists(self, res, *propertypath):
+        if "Properties" in res:
+            relpath = res["Properties"]
+            for pathpart in propertypath:
+                if pathpart in relpath:
+                    relpath = relpath[pathpart]
+                else:
+                    return False
+
+        return True
 
     def get_permissions(self, resname, res):
         mapped_classname = "{}Permissions".format(str(res["Type"]).replace("::",""))

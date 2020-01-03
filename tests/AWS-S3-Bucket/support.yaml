@@ -1,0 +1,138 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-S3-Bucket-support
+Resources:
+    LoggingBucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            AccessControl: LogDeliveryWrite
+            VersioningConfiguration:
+                Status: Enabled
+
+    Key:
+        Type: AWS::KMS::Key
+        Properties:
+            KeyPolicy:
+                Version: '2012-10-17'
+                Id: root
+                Statement:
+                  - Sid: Enable IAM User Permissions
+                    Effect: Allow
+                    Principal:
+                        AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+                    Action: 'kms:*'
+                    Resource: '*'
+
+    LambdaFunctionExecutionRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - lambda.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: root
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - logs:*
+                        Resource: arn:aws:logs:*:*:*
+                      - Effect: Allow
+                        Action:
+                          - xray:PutTraceSegments
+                        Resource: '*'
+                      - Effect: Allow
+                        Action:
+                          - sqs:SendMessage
+                        Resource: '*'
+                      - Effect: Allow
+                        Action:
+                          - ec2:CreateNetworkInterface
+                          - ec2:DescribeNetworkInterfaces
+                          - ec2:DeleteNetworkInterface
+                        Resource: '*'
+
+    LambdaFunction:
+        Type: AWS::Lambda::Function
+        Properties:
+            Handler: index.handler
+            Role: !GetAtt LambdaFunctionExecutionRole.Arn
+            Code: 
+                S3Bucket: ianmckay-ap-southeast-2
+                S3Key: emptyhandler.zip
+            Runtime: nodejs12.x
+            Timeout: 10
+
+    Queue: 
+        Type: AWS::SQS::Queue
+
+    Topic: 
+        Type: AWS::SNS::Topic
+
+    ReplicationRole:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - s3.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: /
+            Policies:
+              - PolicyName: root
+                PolicyDocument:
+                  Version: '2012-10-17'
+                  Statement:
+                    - Effect: Allow
+                      Action:
+                        - s3:GetReplicationConfiguration
+                        - s3:ListBucket
+                        - s3:GetObjectVersion
+                        - s3:GetObjectVersionAcl
+                        - s3:GetObjectVersionTagging
+                        - s3:ReplicateObject
+                        - s3:ReplicateDelete
+                        - s3:ReplicateTags
+                      Resource: '*'
+
+Outputs:
+    Key:
+        Value: !GetAtt Key.Arn
+        Export:
+            Name: svcrolegensupport-AWS-S3-Bucket-Key
+    
+    LoggingBucket:
+        Value: !Ref LoggingBucket
+        Export:
+            Name: svcrolegensupport-AWS-S3-Bucket-LoggingBucket
+
+    LambdaFunction:
+        Value: !GetAtt LambdaFunction.Arn
+        Export:
+            Name: svcrolegensupport-AWS-S3-Bucket-LambdaFunction
+    
+    Queue:
+        Value: !GetAtt Queue.Arn
+        Export:
+            Name: svcrolegensupport-AWS-S3-Bucket-Queue
+    
+    Topic:
+        Value: !Ref Topic
+        Export:
+            Name: svcrolegensupport-AWS-S3-Bucket-Topic
+    
+    ReplicationRole:
+        Value: !GetAtt ReplicationRole.Arn
+        Export:
+            Name: svcrolegensupport-AWS-S3-Bucket-ReplicationRole

@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-S3-Bucket
+Resources:
+    Bucket:
+        Type: AWS::S3::Bucket
+        Properties:
+            AccelerateConfiguration:
+                AccelerationStatus: Suspended
+            AccessControl: LogDeliveryWrite
+            AnalyticsConfigurations:
+              - Id: '1'
+                Prefix: someprefix
+                StorageClassAnalysis:
+                    DataExport:
+                        Destination:
+                            BucketAccountId: '123456789012'
+                            BucketArn: arn:aws:s3:::somebucket
+                            Format: CSV
+                            Prefix: someprefix
+                        OutputSchemaVersion: V_1
+                TagFilters:
+                  - Key: tagkey
+                    Value: tagvalue
+            BucketEncryption:
+                ServerSideEncryptionConfiguration:
+                  - ServerSideEncryptionByDefault:
+                        SSEAlgorithm: aws:kms
+                        KMSMasterKeyID: !ImportValue svcrolegensupport-AWS-S3-Bucket-Key
+            CorsConfiguration:
+                CorsRules:
+                  - AllowedHeaders: 
+                      - X-X
+                    AllowedMethods: 
+                      - GET
+                      - HEAD
+                    AllowedOrigins: 
+                      - www.example.com
+                    ExposedHeaders: 
+                      - X-X
+                    Id: '1'
+                    MaxAge: 60
+            InventoryConfigurations:
+              - Destination: 
+                    BucketAccountId: '123456789012'
+                    BucketArn: arn:aws:s3:::somebucket
+                    Format: CSV
+                    Prefix: someprefix
+                Enabled: true
+                Id: '1'
+                IncludedObjectVersions: All
+                OptionalFields: 
+                  - Size
+                Prefix: prefix
+                ScheduleFrequency: Daily
+            LifecycleConfiguration:
+                Rules:
+                  - ExpirationInDays: 365
+                    Id: '1'
+                    NoncurrentVersionExpirationInDays: 123
+                    NoncurrentVersionTransitions: 
+                      - StorageClass: GLACIER
+                        TransitionInDays: 91
+                    Prefix: prefix
+                    Status: Enabled
+                    TagFilters: 
+                      - Key: tagkey
+                        Value: tagvalue
+                    Transitions:
+                      - StorageClass: DEEP_ARCHIVE
+                        TransitionInDays: 215
+                      - StorageClass: GLACIER
+                        TransitionInDays: 124
+                      - StorageClass: ONEZONE_IA
+                        TransitionInDays: 93
+                      - StorageClass: INTELLIGENT_TIERING
+                        TransitionInDays: 62
+                      - StorageClass: STANDARD_IA
+                        TransitionInDays: 31
+                  - AbortIncompleteMultipartUpload: 
+                        DaysAfterInitiation: 1
+                    Id: '2'
+                    Prefix: prefix2
+                    Status: Enabled
+            LoggingConfiguration: {}
+            MetricsConfigurations:
+              - Id: '1'
+                Prefix: prefix
+                TagFilters: 
+                  - Key: tagkey
+                    Value: tagvalue
+            # ObjectLockConfiguration:
+            #     ObjectLockEnabled: Enabled
+            #     Rule:
+            #         DefaultRetention:
+            #             Days: 1
+            #             Mode: COMPLIANCE
+            # ObjectLockEnabled: true
+            PublicAccessBlockConfiguration:
+                BlockPublicAcls: true
+                BlockPublicPolicy: true
+                IgnorePublicAcls: true
+                RestrictPublicBuckets: true
+            ReplicationConfiguration:
+                Role: !ImportValue svcrolegensupport-AWS-S3-Bucket-ReplicationRole
+                Rules:
+                  - Destination:
+                        AccessControlTranslation:
+                            Owner: Destination
+                        Account: !Ref AWS::AccountId
+                        Bucket:
+                            Fn::Sub:
+                              - 'arn:aws:s3:::${Bucket}'
+                              - Bucket: !ImportValue svcrolegensupport-AWS-S3-Bucket-LoggingBucket
+                        EncryptionConfiguration: 
+                            ReplicaKmsKeyID: !ImportValue svcrolegensupport-AWS-S3-Bucket-Key
+                        StorageClass: GLACIER
+                    Id: 'root'
+                    Prefix: abc
+                    SourceSelectionCriteria: 
+                        SseKmsEncryptedObjects:
+                            Status: Enabled
+                    Status: Enabled
+            Tags:
+              - Key: FOO
+                Value: BAR
+            VersioningConfiguration:
+                Status: Enabled
+            WebsiteConfiguration:
+                ErrorDocument: error.html
+                IndexDocument: index.html
+                RoutingRules: 
+                  - RedirectRule: 
+                        HostName: example.com
+                        HttpRedirectCode: '301'
+                        Protocol: http
+                        ReplaceKeyWith: redirect.html
+                    RoutingRuleCondition: 
+                        HttpErrorCodeReturnedEquals: '404'
+                        KeyPrefixEquals: abc
+
+Outputs:
+    Bucket:
+        Value: !Ref Bucket
+        Export:
+            Name: svcrolegen-AWS-S3-Bucket

@@ -1,7 +1,5 @@
 # Note: File naming altered to not conflict with Python's built-in `lambda()`
-from mappings.base import BasePermissions
-
-class AWSLambdaFunctionPermissions(BasePermissions):
+class AWSLambdaFunctionPermissions:
     def get_permissions(self, resname, res):
         functionname = self._get_property_or_default(res, "*", "FunctionName")
         role = self._get_property_or_default(res, "*", "Role")
@@ -134,7 +132,7 @@ class AWSLambdaFunctionPermissions(BasePermissions):
                 'Resource': '*'
             })
 
-class AWSLambdaVersionPermissions(BasePermissions):
+class AWSLambdaVersionPermissions:
     def get_permissions(self, resname, res):
         functionname = self._get_property_or_default(res, "*", "FunctionName").split(":").pop() # could be an arn or partial arn
         provisionedconcurrentexecutions = self._get_property_or_default(res, None, "ProvisionedConcurrencyConfig", "ProvisionedConcurrentExecutions")
