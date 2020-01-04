@@ -16,7 +16,7 @@ Resources:
                       - sts:AssumeRole
             Path: "/"
             Policies:
-              - PolicyName: S3Bucket-create
+              - PolicyName: S3-Bucket-create
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:
@@ -46,7 +46,7 @@ Resources:
                         Condition:
                             StringEquals:
                                 iam:PassedToService: s3.amazonaws.com
-              - PolicyName: S3Bucket-delete
+              - PolicyName: S3-Bucket-delete
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:

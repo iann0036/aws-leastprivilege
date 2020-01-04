@@ -16,7 +16,7 @@ Resources:
                       - sts:AssumeRole
             Path: "/"
             Policies:
-              - PolicyName: EC2SecurityGroup-create
+              - PolicyName: EC2-SecurityGroup-create
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:
@@ -29,7 +29,7 @@ Resources:
                           - ec2:AuthorizeSecurityGroupIngress
                           - ec2:AuthorizeSecurityGroupEgress
                         Resource: '*'
-              - PolicyName: EC2SecurityGroup-update
+              - PolicyName: EC2-SecurityGroup-update
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:
@@ -38,7 +38,7 @@ Resources:
                           - ec2:RevokeSecurityGroupIngress
                           - ec2:DeleteTags
                         Resource: '*'
-              - PolicyName: EC2SecurityGroup-delete
+              - PolicyName: EC2-SecurityGroup-delete
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:

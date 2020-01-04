@@ -6,6 +6,7 @@ from cfn_flip import to_json
 from mappings.ec2 import *
 from mappings.awslambda import *
 from mappings.s3 import *
+from mappings.sns import *
 
 
 class InvalidArguments(Exception):

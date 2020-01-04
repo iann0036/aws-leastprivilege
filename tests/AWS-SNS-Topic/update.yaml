@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-SNS-Topic
+Resources:
+    Topic:
+        Type: AWS::SNS::Topic
+        Properties:
+            DisplayName: mytopic2
+            TopicName: mytopic
+            Tags:
+              - Key: FOO2
+                Value: BAR2
+            Subscription:
+              - Endpoint: http://example.com
+                Protocol: http
+              - Endpoint: https://example.com
+                Protocol: https
+              - Endpoint: random@blackhole.io
+                Protocol: email
+              - Endpoint: random@blackhole.io
+                Protocol: email-json
+              - Endpoint: '+15005550006'
+                Protocol: sms

@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-SNS-Topic-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-SNS-Topic-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: SNS-Topic-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - sns:CreateTopic
+                          - sns:GetTopicAttributes
+                          - sns:TagResource
+                        Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*
+                      - Effect: Allow
+                        Action:
+                          - sns:ListTopics
+                        Resource: '*'
+                      - Effect: Allow
+                        Action:
+                          - sns:Subscribe
+                        Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*
+              - PolicyName: SNS-Topic-update
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - sns:SetTopicAttributes
+                          - sns:UntagResource
+                          - sns:ListSubscriptionsByTopic
+                          - sns:Unsubscribe
+                        Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*
+              - PolicyName: SNS-Topic-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - sns:DeleteTopic
+                        Resource: !Sub arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*

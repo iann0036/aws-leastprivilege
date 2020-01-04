@@ -16,7 +16,7 @@ Resources:
                       - sts:AssumeRole
             Path: "/"
             Policies:
-              - PolicyName: LambdaFunction-create
+              - PolicyName: Lambda-Function-create
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:
@@ -68,7 +68,7 @@ Resources:
                           - ec2:DescribeSubnets
                           - ec2:DescribeNetworkInterfaces
                         Resource: '*'
-              - PolicyName: LambdaFunction-createnm
+              - PolicyName: Lambda-Function-createnm
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:
@@ -82,7 +82,7 @@ Resources:
                           - lambda:TagResource
                           - lambda:UntagResource
                         Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
-              - PolicyName: LambdaFunction-update
+              - PolicyName: Lambda-Function-update
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:
@@ -91,7 +91,7 @@ Resources:
                           - lambda:UpdateFunctionConfiguration
                           - lambda:UpdateFunctionCode
                         Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
-              - PolicyName: LambdaFunction-delete
+              - PolicyName: Lambda-Function-delete
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:

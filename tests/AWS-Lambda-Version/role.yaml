@@ -16,7 +16,7 @@ Resources:
                       - sts:AssumeRole
             Path: "/"
             Policies:
-              - PolicyName: LambdaVersion-create
+              - PolicyName: Lambda-Version-create
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:
@@ -27,7 +27,7 @@ Resources:
                           - lambda:GetProvisionedConcurrencyConfig
                           - lambda:PutProvisionedConcurrencyConfig
                         Resource: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*
-              - PolicyName: LambdaVersion-delete
+              - PolicyName: Lambda-Version-delete
                 PolicyDocument:
                     Version: '2012-10-17'
                     Statement:

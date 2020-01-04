@@ -21,6 +21,7 @@ Resources:
             ReservedConcurrentExecutions: 1
             Runtime: nodejs12.x
             Timeout: 20
+            FunctionName: myfunction
             TracingConfig:
                 Mode: Active
             Tags:
