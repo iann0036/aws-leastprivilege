@@ -33,19 +33,6 @@ WARNING: Skipped the following types: AWS::S3::Bucket
                 "Resource": "*"
             },
             {
-                "Sid": "AccessAnalyzer-update1-reg",
-                "Effect": "Allow",
-                "Action": [
-                    "access-analyzer:TagResource",
-                    "access-analyzer:UntagResource",
-                    "access-analyzer:ListAnalyzers",
-                    "access-analyzer:UpdateArchiveRule",
-                    "access-analyzer:DeleteArchiveRule",
-                    "access-analyzer:CreateArchiveRule"
-                ],
-                "Resource": "*"
-            },
-            {
                 "Sid": "AccessAnalyzer-delete1-reg",
                 "Effect": "Allow",
                 "Action": [
@@ -113,9 +100,9 @@ The filename of a local CloudFormation template file to analyze. You must specif
 
 The stack name or stack ID of a deployed CloudFormation stack to analyze. You must specify either this option or `-i, --input-filename`.
 
-#### --skip-update-actions
+#### --include-update-actions
 
-When specified, no actions relating to stack updates (that don't trigger a resource replacement) will be included in the output. The default behaviour will include the actions for stack updates.
+When specified, actions relating to stack updates (that don't trigger a resource replacement) will be included in the output. The default behaviour will not include the actions for stack updates.
 
 #### --consolidate-policy
 

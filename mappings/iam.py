@@ -47,15 +47,14 @@ class AWSIAMRolePermissions:
                 ],
                 'Resource': 'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
             }
-            if not self.skip_update_actions:
-                delete_permission_1 = {
-                    'Sid': '{}-delete1'.format(resname),
-                    'Effect': 'Allow',
-                    'Action': [
-                        'iam:DetachRolePolicy'
-                    ],
-                    'Resource': 'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
-                }
+            delete_permission_1 = {
+                'Sid': '{}-delete1'.format(resname),
+                'Effect': 'Allow',
+                'Action': [
+                    'iam:DetachRolePolicy'
+                ],
+                'Resource': 'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
+            }
             create_permission_3_condition = {
                 'StringEquals': {}
             }
@@ -73,7 +72,8 @@ class AWSIAMRolePermissions:
                 delete_permission_1['Condition'] = delete_permission_1_condition
             
             self.permissions.append(create_permission_3)
-            self.permissions.append(delete_permission_1)
+            if self.include_update_actions:
+                self.permissions.append(delete_permission_1)
         if policies_len:
             create_permission_4 = {
                 'Sid': '{}-create4'.format(resname),
@@ -121,7 +121,7 @@ class AWSIAMRolePermissions:
                 ],
                 'Resource': 'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
             })
-            if not self.skip_update_actions:
+            if self.include_update_actions:
                 self.permissions.append({
                     'Sid': '{}-updatenm1'.format(resname),
                     'Effect': 'Allow',
@@ -130,7 +130,7 @@ class AWSIAMRolePermissions:
                     ],
                     'Resource': 'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
                 })
-        if not self.skip_update_actions:
+        if self.include_update_actions:
             self.permissions.append({
                 'Sid': '{}-update1'.format(resname),
                 'Effect': 'Allow',

@@ -22,7 +22,7 @@ class RoleGen:
     def __init__(self, args):
         self.input_file = args.input_file
         self.stack_name = args.stack_name
-        self.skip_update_actions = args.skip_update_actions
+        self.include_update_actions = args.include_update_actions
         self.consolidate_policy = args.consolidate_policy
         self.region = args.region or boto3.session.Session().region_name or 'us-east-1'
         self.template = None
@@ -182,7 +182,7 @@ class RoleGen:
             return
 
         handler_types = ["create"]
-        if not self.skip_update_actions:
+        if self.include_update_actions:
             handler_types.append("update")
         handler_types.append("delete")  # ordering important
 

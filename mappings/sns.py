@@ -41,7 +41,7 @@ class AWSSNSTopicPermissions:
                 ],
                 'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
             })
-        if not self.skip_update_actions:
+        if self.include_update_actions:
             self.permissions.append({
                 'Sid': '{}-update1'.format(resname),
                 'Effect': 'Allow',

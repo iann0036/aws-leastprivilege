@@ -13,7 +13,7 @@ if __name__ == "__main__":
 
     parser.add_argument("-i", "--input-filename", action="store", dest="input_file")
     parser.add_argument("--stack-name", action="store", dest="stack_name")
-    parser.add_argument("--skip-update-actions", action="store_true", dest="skip_update_actions", default=False)
+    parser.add_argument("--include-update-actions", action="store_true", dest="include_update_actions", default=False)
     parser.add_argument("--consolidate-policy", action="store_true", dest="consolidate_policy", default=False)
     parser.add_argument("--region", action="store", dest="region")
 
