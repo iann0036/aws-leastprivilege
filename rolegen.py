@@ -7,6 +7,7 @@ from mappings.ec2 import *
 from mappings.awslambda import *
 from mappings.s3 import *
 from mappings.sns import *
+from mappings.iam import *
 
 
 class InvalidArguments(Exception):
@@ -24,6 +25,7 @@ class RoleGen:
         self.skip_update_actions = args.skip_update_actions
         self.consolidate_policy = args.consolidate_policy
         self.region = args.region or boto3.session.Session().region_name or 'us-east-1'
+        self.template = None
 
         self.cfnclient = boto3.client(
             'cloudformation', region_name=self.region)
@@ -36,7 +38,7 @@ class RoleGen:
         if self.input_file:
             try:
                 with open(self.input_file, "r", encoding="utf-8") as f:
-                    template = json.loads(to_json(f.read()))
+                    self.template = json.loads(to_json(f.read()))
             except:
                 raise InvalidTemplate("Invalid template (could not parse)")
         elif self.stack_name:
@@ -45,20 +47,20 @@ class RoleGen:
                     StackName=self.stack_name,
                     TemplateStage='Processed'
                 )['TemplateBody']
-                template = json.loads(to_json(template_body))
+                self.template = json.loads(to_json(template_body))
             except:
                 raise InvalidTemplate("Could not retrieve remote stack")
         else:
             raise InvalidArguments("No template provided")
 
-        if "Resources" not in template:
+        if "Resources" not in self.template:
             raise InvalidArguments("Resources not in template")
 
-        for resname, res in template["Resources"].items():
+        for resname, res in self.template["Resources"].items():
             self.get_permissions(resname, res)
 
         if self.consolidate_policy:
-            self._consolidate_permissions()
+            self.permissions = self.consolidate_permissions(self.permissions)
 
         policy = {
             "PolicyName": "root",
@@ -73,38 +75,40 @@ class RoleGen:
                 ", ".join(list(set(self.skipped_types)))))
 
         if len(json.dumps(policy, separators=(',', ': '))) > 10240:
-            sys.stderr.write("WARNING: The generated policy size is greater than the maximum 10240 character limit\n")
-        
-        print(json.dumps(policy, indent=4, separators=(',', ': ')))
+            sys.stderr.write(
+                "WARNING: The generated policy size is greater than the maximum 10240 character limit\n")
 
-    def _consolidate_permissions(self):
+        return json.dumps(policy, indent=4, separators=(',', ': '))
+
+    def consolidate_permissions(self, permissions):
         # TODO: Consolidate for same action, different resource and for combining wildcard w/ specific
         new_permissions = []
-        
-        while len(self.permissions):
-            permission = self.permissions.pop(0)
+
+        while len(permissions):
+            permission = permissions.pop(0)
             permission.pop('Sid', None)
 
             i = 0
-            while i < len(self.permissions):
+            while i < len(permissions):
                 if (
-                    self.permissions[i]['Resource'] == permission['Resource'] and
-                    self.permissions[i]['Effect'] == permission['Effect'] and
+                    permissions[i]['Resource'] == permission['Resource'] and
+                    permissions[i]['Effect'] == permission['Effect'] and
                     (
-                        ('Condition' not in self.permissions[i] and 'Condition' not in permission) or
-                        ('Condition' in self.permissions[i] and 'Condition' in permission and 
-                        self.permissions[i]['Condition'] == permission['Condition'])
+                        ('Condition' not in permissions[i] and 'Condition' not in permission) or
+                        ('Condition' in permissions[i] and 'Condition' in permission and
+                         permissions[i]['Condition'] == permission['Condition'])
                     )
                 ):
                     permission['Action'] += self.permissions[i]['Action']
-                    self.permissions.pop(i)
+                    permissions.pop(i)
                 else:
                     i += 1
 
-            permission['Action'] = list(set(permission['Action'])) # remove duplicates
+            permission['Action'] = list(
+                set(permission['Action']))  # remove duplicates
             new_permissions.append(permission)
 
-        self.permissions = new_permissions
+        return new_permissions
 
     def _get_property_or_default(self, res, notfoundvalue, *propertypath):
         value = '*'
@@ -142,7 +146,7 @@ class RoleGen:
                 value = len(relpath)
 
         return value
-    
+
     def _get_property_exists(self, res, *propertypath):
         if "Properties" in res:
             relpath = res["Properties"]
@@ -155,7 +159,8 @@ class RoleGen:
         return True
 
     def get_permissions(self, resname, res):
-        mapped_classname = "{}Permissions".format(str(res["Type"]).replace("::",""))
+        mapped_classname = "{}Permissions".format(
+            str(res["Type"]).replace("::", ""))
         if mapped_classname in globals():
             globals()[mapped_classname].get_permissions(self, resname, res)
         else:
@@ -179,7 +184,7 @@ class RoleGen:
         handler_types = ["create"]
         if not self.skip_update_actions:
             handler_types.append("update")
-        handler_types.append("delete") # ordering important
+        handler_types.append("delete")  # ordering important
 
         for handler in handler_types:
             if handler in type_schema["handlers"] and "permissions" in type_schema["handlers"][handler]:

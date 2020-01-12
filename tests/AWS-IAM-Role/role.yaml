@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-IAM-Role-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-IAM-Role-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: IAM-Role-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - iam:TagRole
+                          - iam:UntagRole
+                          - iam:UpdateRoleDescription
+                          - iam:UpdateAssumeRolePolicy
+                          - iam:UpdateRole
+                          - iam:GetRole
+                          - iam:GetRolePolicy
+                        Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/*
+                      - Effect: Allow
+                        Action:
+                          - iam:CreateRole
+                          - iam:AttachRolePolicy
+                          - iam:PutRolePolicy
+                        Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/*
+                        Condition:
+                            StringEquals:
+                                iam:PermissionsBoundary: !ImportValue svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy
+              - PolicyName: IAM-Role-update
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - iam:DetachRolePolicy
+                          - iam:DeleteRolePolicy
+                          - iam:PutRolePolicy
+                          - iam:PutRolePermissionsBoundary
+                        Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/*
+                        Condition:
+                            StringEquals:
+                                iam:PermissionsBoundary:
+                                  - !ImportValue svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy
+                                  - !ImportValue svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy2
+                      - Effect: Allow
+                        Action:
+                          - iam:CreateRole
+                          - iam:AttachRolePolicy
+                        Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/*
+                        Condition:
+                            StringEquals:
+                                iam:PermissionsBoundary: !ImportValue svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy2
+              - PolicyName: IAM-Role-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - iam:DeleteRole
+                        Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/*

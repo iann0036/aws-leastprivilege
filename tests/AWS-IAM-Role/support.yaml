@@ -1,0 +1,51 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-IAM-Role-support
+Resources:
+    PermissionBoundaryPolicy:
+        Type: AWS::IAM::ManagedPolicy
+        Properties:
+            ManagedPolicyName: svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy
+            PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - logs:*
+                    Resource: arn:aws:logs:*:*:*
+                  - Effect: Allow
+                    Action:
+                      - xray:PutTraceSegments
+                      - ec2:CreateNetworkInterface
+                      - ec2:DescribeNetworkInterfaces
+                      - ec2:DeleteNetworkInterface
+                    Resource: '*'
+    
+    PermissionBoundaryPolicy2:
+        Type: AWS::IAM::ManagedPolicy
+        Properties:
+            ManagedPolicyName: svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy2
+            PolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Action:
+                      - logs:*
+                    Resource: arn:aws:logs:*:*:*
+                  - Effect: Allow
+                    Action:
+                      - xray:PutTraceSegments
+                      - ec2:CreateNetworkInterface
+                      - ec2:DescribeNetworkInterfaces
+                      - ec2:DeleteNetworkInterface
+                    Resource: '*'
+
+Outputs:
+    PermissionBoundaryPolicy:
+        Value: !Ref PermissionBoundaryPolicy
+        Export:
+            Name: svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy
+
+    PermissionBoundaryPolicy2:
+        Value: !Ref PermissionBoundaryPolicy2
+        Export:
+            Name: svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy2

@@ -1,0 +1,39 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-IAM-Role
+Resources:
+    Role:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        AWS: !Ref AWS::AccountId
+                    Action:
+                      - sts:AssumeRole
+            PermissionsBoundary: !ImportValue svcrolegensupport-AWS-IAM-Role-PermissionBoundaryPolicy
+            Description: SomeDescription
+            ManagedPolicyArns:
+              - arn:aws:iam::aws:policy/CloudWatchLogsReadOnlyAccess
+            MaxSessionDuration: 4200
+            Path: '/somepath/'
+            Policies: 
+              - PolicyName: root
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - logs:*
+                        Resource: arn:aws:logs:*:*:*
+                      - Effect: Allow
+                        Action:
+                          - xray:PutTraceSegments
+                          - ec2:CreateNetworkInterface
+                          - ec2:DescribeNetworkInterfaces
+                        Resource: '*'
+            RoleName: SomeRoleName
+            Tags: 
+              - Key: FOO
+                Value: BAR

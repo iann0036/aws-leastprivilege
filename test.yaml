@@ -5,6 +5,39 @@ Resources:
     AccessAnalyzer:
         Type: AWS::AccessAnalyzer::Analyzer
 
+    Role:
+        Type: AWS::IAM::Role
+        Properties:
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - lambda.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            ManagedPolicyArns:
+              - arn:aws:iam::aws:policy/ReadOnlyAccess
+              - arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess
+            Policies:
+              - PolicyName: root
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - logs:*
+                        Resource: arn:aws:logs:*:*:*
+                      - Effect: Allow
+                        Action:
+                          - xray:PutTraceSegments
+                          - ec2:CreateNetworkInterface
+                          - ec2:DescribeNetworkInterfaces
+                          - ec2:DeleteNetworkInterface
+                        Resource: '*'
+
     LambdaFunction:
         Type: AWS::Lambda::Function
         Properties:
