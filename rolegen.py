@@ -8,6 +8,7 @@ from mappings.awslambda import *
 from mappings.s3 import *
 from mappings.sns import *
 from mappings.iam import *
+from mappings.cloudwatch import *
 
 
 class InvalidArguments(Exception):
@@ -112,6 +113,12 @@ class RoleGen:
             new_permissions.append(permission)
 
         return new_permissions
+
+    def _forcelist(self, prop):
+        if isinstance(prop, list):
+            return prop
+        
+        return prop
 
     def _get_property_or_default(self, res, notfoundvalue, *propertypath):
         value = '*'

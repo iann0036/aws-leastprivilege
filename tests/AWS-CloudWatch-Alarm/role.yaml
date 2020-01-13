@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-CloudWatch-Alarm-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-CloudWatch-Alarm-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: CloudWatch-Alarm-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - cloudwatch:PutMetricAlarm
+                          - cloudwatch:DescribeAlarms
+                        Resource: !Sub 'arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*'
+                      - Effect: Allow
+                        Action:
+                          - iam:CreateServiceLinkedRole
+                        Resource: !Sub arn:aws:iam::${AWS::AccountId}:role/aws-service-role/events.amazonaws.com/AWSServiceRoleForCloudWatchEvents
+                        Condition:
+                            StringEquals:
+                                iam:AWSServiceName: events.amazonaws.com
+              - PolicyName: CloudWatch-Alarm-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - cloudwatch:DeleteAlarms
+                        Resource: !Sub 'arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*'

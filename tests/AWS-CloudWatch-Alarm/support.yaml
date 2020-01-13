@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-CloudWatch-Alarm-support
+Resources:
+    Topic: 
+        Type: AWS::SNS::Topic
+
+    Topic2: 
+        Type: AWS::SNS::Topic
+
+    Instance:
+        Type: AWS::EC2::Instance
+        Properties:
+            ImageId: ami-0c91f97cadcc8499e
+            InstanceType: t3.nano
+
+Outputs:
+    Topic:
+        Value: !Ref Topic
+        Export:
+            Name: svcrolegensupport-AWS-CloudWatch-Alarm-Topic
+
+    Topic2:
+        Value: !Ref Topic2
+        Export:
+            Name: svcrolegensupport-AWS-CloudWatch-Alarm-Topic2
+
+    Instance:
+        Value: !Ref Instance
+        Export:
+            Name: svcrolegensupport-AWS-CloudWatch-Alarm-Instance

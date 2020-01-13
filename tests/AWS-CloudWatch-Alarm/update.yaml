@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-CloudWatch-Alarm
+Resources:
+    Alarm:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            ComparisonOperator: GreaterThanUpperThreshold
+            EvaluationPeriods: 2
+            ActionsEnabled: false
+            AlarmActions:
+              - !ImportValue svcrolegensupport-AWS-CloudWatch-Alarm-Topic2
+            AlarmDescription: mydescription2
+            AlarmName: myalarm
+            DatapointsToAlarm: 2
+            InsufficientDataActions: 
+              - !ImportValue svcrolegensupport-AWS-CloudWatch-Alarm-Topic2
+            Metrics:
+              - Expression: ANOMALY_DETECTION_BAND(m1, 2)
+                Id: ad1
+              - Id: m1
+                MetricStat:
+                  Metric:
+                    MetricName: Invocations
+                    Namespace: AWS/Lambda
+                  Period: 600
+                  Stat: Sum
+            OKActions:
+              - !ImportValue svcrolegensupport-AWS-CloudWatch-Alarm-Topic2
+            ThresholdMetricId: ad1
+            TreatMissingData: breaching

@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-CloudWatch-Alarm
+Resources:
+    Alarm:
+        Type: AWS::CloudWatch::Alarm
+        Properties:
+            MetricName: StatusCheckFailed_System
+            ComparisonOperator: GreaterThanThreshold
+            EvaluationPeriods: 1
+            Period: 60
+            Namespace: AWS/EC2
+            #Statistic: Average
+            Threshold: 1
+            ActionsEnabled: true
+            AlarmActions:
+              - !ImportValue svcrolegensupport-AWS-CloudWatch-Alarm-Topic
+              - arn:aws:automate:ap-southeast-2:ec2:stop
+              - !Sub arn:aws:automate:${AWS::Region}:ec2:terminate
+              - !Sub arn:aws:automate:${AWS::Region}:ec2:recover
+              - !Sub arn:aws:automate:${AWS::Region}:ec2:reboot
+            AlarmDescription: mydescription
+            AlarmName: myalarm
+            DatapointsToAlarm: 1
+            Dimensions:
+              - Name: InstanceId
+                Value: !ImportValue svcrolegensupport-AWS-CloudWatch-Alarm-Instance
+            EvaluateLowSampleCountPercentile: evaluate
+            ExtendedStatistic: p10.0
+            InsufficientDataActions: 
+              - !ImportValue svcrolegensupport-AWS-CloudWatch-Alarm-Topic
+              - !Sub arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:scalingPolicy:policy-id:autoScalingGroupName/group-friendly-name:policyName/policy-friendly-name
+            # Metrics: 
+            #     - MetricDataQuery
+            OKActions:
+              - !ImportValue svcrolegensupport-AWS-CloudWatch-Alarm-Topic
+            # ThresholdMetricId: String
+            TreatMissingData: notBreaching
+            Unit: None
