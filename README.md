@@ -111,3 +111,7 @@ When specified, the `Sid` fields will be removed and statements sharing the same
 #### --region <name>
 
 Overrides the region to specify in policy outputs and when retrieving deployed templates. By default, the region will be retrieved using the [default precedence](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#configuring-credentials) for Boto3.
+
+#### --profile <name>
+
+When specified, the specified named profile credentials will be used for all data gathering AWS actions. The `AWS_PROFILE` environmental variable would also be respected if this property is not set.

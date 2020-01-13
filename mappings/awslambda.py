@@ -20,6 +20,7 @@ class AWSLambdaFunctionPermissions:
             ],
             'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
         })
+        # TODO: iam:AssociatedResourceArn
         self.permissions.append({
             'Sid': '{}-create2'.format(resname),
             'Effect': 'Allow',

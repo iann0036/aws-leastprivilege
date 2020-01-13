@@ -22,17 +22,21 @@ class RoleGen:
     def __init__(self, args):
         self.input_file = args.input_file
         self.stack_name = args.stack_name
+        self.profile = args.profile
         self.include_update_actions = args.include_update_actions
         self.consolidate_policy = args.consolidate_policy
         self.region = args.region or boto3.session.Session().region_name or 'us-east-1'
         self.template = None
-
-        self.cfnclient = boto3.client(
-            'cloudformation', region_name=self.region)
         self.permissions = []
         self.skipped_types = []
-        self.accountid = boto3.client(
-            'sts', region_name=self.region).get_caller_identity()['Account']
+
+        session = boto3.session.Session(
+            profile_name=self.profile,
+            region_name=self.region
+        )
+
+        self.cfnclient = session.client('cloudformation')
+        self.accountid = session.client('sts').get_caller_identity()['Account']
 
     def generate(self):
         if self.input_file:
@@ -72,7 +76,7 @@ class RoleGen:
 
         if len(self.skipped_types) > 0:
             sys.stderr.write("WARNING: Skipped the following types: {}\n".format(
-                ", ".join(list(set(self.skipped_types)))))
+                ", ".join(sorted(set(self.skipped_types)))))
 
         if len(json.dumps(policy, separators=(',', ': '))) > 10240:
             sys.stderr.write(
@@ -104,8 +108,7 @@ class RoleGen:
                 else:
                     i += 1
 
-            permission['Action'] = list(
-                set(permission['Action']))  # remove duplicates
+            permission['Action'] = sorted(set(permission['Action']))  # remove duplicates
             new_permissions.append(permission)
 
         return new_permissions
@@ -121,6 +124,8 @@ class RoleGen:
                 else:
                     return notfoundvalue
 
+            relpath = self._resolve_intrinsics(relpath)
+
             if isinstance(relpath, str):  # TODO: Other primitive types
                 value = relpath
             elif isinstance(relpath, list):
@@ -130,6 +135,23 @@ class RoleGen:
                 value = relpath
 
         return value
+
+    def _resolve_intrinsics(self, prop):
+        if isinstance(prop, dict):
+            # TODO: is Ref possible?
+
+            if 'Fn::ImportValue' in prop:
+                importvalue = self._resolve_intrinsics(prop['Fn::ImportValue'])
+                if isinstance(importvalue, str):
+                    exports_paginator = self.cfnclient.get_paginator('list_exports').paginate()
+                    for exports_page in exports_paginator:
+                        for export in exports_page['Exports']:
+                            if export['Name'] == importvalue:
+                                return export['Value']
+
+            # TODO: Other intrinsics
+        
+        return prop
 
     def _get_property_array_length(self, res, notfoundvalue, *propertypath):
         value = 0
@@ -191,6 +213,6 @@ class RoleGen:
                 self.permissions.append({
                     'Sid': '{}-{}1-reg'.format(resname, handler),
                     'Effect': 'Allow',
-                    'Action': list(set(type_schema["handlers"][handler]["permissions"])),
+                    'Action': sorted(set(type_schema["handlers"][handler]["permissions"])),
                     'Resource': '*'
                 })

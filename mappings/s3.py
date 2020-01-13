@@ -300,7 +300,7 @@ class AWSS3BucketPermissions:
                 ],
                 'Resource': 'arn:aws:s3:::{}'.format(bucketname)
             })
-            # iam:PassRole too insecure for generic?
+            # TODO: iam:PassRole too insecure for generic?
             '''
             self.permissions.append({
                 'Sid': '{}-update15'.format(resname),
