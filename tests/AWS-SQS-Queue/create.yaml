@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-SQS-Queue
+Resources:
+    Queue:
+        Type: AWS::SQS::Queue
+        Properties:
+            QueueName: myqueue.fifo
+            #ContentBasedDeduplication: true
+            DelaySeconds: 10
+            FifoQueue: true
+            MaximumMessageSize: 2048
+            MessageRetentionPeriod: 120
+            ReceiveMessageWaitTimeSeconds: 20
+            VisibilityTimeout: 180
+            Tags:
+              - Key: FOO
+                Value: BAR
+            KmsDataKeyReusePeriodSeconds: 120
+            KmsMasterKeyId: !ImportValue svcrolegensupport-AWS-SQS-Queue-Key
+            RedrivePolicy: 
+                deadLetterTargetArn: !ImportValue svcrolegensupport-AWS-SQS-Queue-DLQ
+                maxReceiveCount: 5

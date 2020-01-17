@@ -9,6 +9,7 @@ from mappings.s3 import *
 from mappings.sns import *
 from mappings.iam import *
 from mappings.cloudwatch import *
+from mappings.sqs import *
 
 
 class InvalidArguments(Exception):

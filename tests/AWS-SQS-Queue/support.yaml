@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-SQS-Queue-support
+Resources:
+    Key:
+        Type: AWS::KMS::Key
+        Properties:
+            KeyPolicy:
+                Version: '2012-10-17'
+                Id: root
+                Statement:
+                  - Sid: Enable IAM User Permissions
+                    Effect: Allow
+                    Principal:
+                        AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+                    Action: 'kms:*'
+                    Resource: '*'
+    
+    Key2:
+        Type: AWS::KMS::Key
+        Properties:
+            KeyPolicy:
+                Version: '2012-10-17'
+                Id: root
+                Statement:
+                  - Sid: Enable IAM User Permissions
+                    Effect: Allow
+                    Principal:
+                        AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+                    Action: 'kms:*'
+                    Resource: '*'
+
+    DLQ:
+        Type: AWS::SQS::Queue
+        Properties:
+            FifoQueue: true
+
+    DLQ2:
+        Type: AWS::SQS::Queue
+        Properties:
+            FifoQueue: true
+
+Outputs:
+    Key:
+        Value: !GetAtt Key.Arn
+        Export:
+            Name: svcrolegensupport-AWS-SQS-Queue-Key
+
+    Key2:
+        Value: !GetAtt Key.Arn
+        Export:
+            Name: svcrolegensupport-AWS-SQS-Queue-Key2
+
+    DLQ:
+        Value: !GetAtt DLQ.Arn
+        Export:
+            Name: svcrolegensupport-AWS-SQS-Queue-DLQ
+
+    DLQ2:
+        Value: !GetAtt DLQ2.Arn
+        Export:
+            Name: svcrolegensupport-AWS-SQS-Queue-DLQ2

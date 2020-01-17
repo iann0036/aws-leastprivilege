@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-SQS-Queue-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-SQS-Queue-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: SQS-Queue-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - sqs:CreateQueue
+                          - sqs:GetQueueAttributes
+                          - sqs:TagQueue
+                        Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*'
+              - PolicyName: SQS-Queue-update
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - sqs:SetQueueAttributes
+                          - sqs:UntagQueue
+                        Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*'
+              - PolicyName: SQS-Queue-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - sqs:DeleteQueue
+                        Resource: !Sub 'arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:*'
