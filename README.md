@@ -22,7 +22,7 @@ $ python3 index.py -i test.yaml
         "Version": "2012-10-17",
         "Statement": [
             {
-                "Sid": "AccessAnalyzer-create1-reg",
+                "Sid": "AccessAnalyzer-Create1-reg",
                 "Effect": "Allow",
                 "Action": [
                     "access-analyzer:TagResource",
@@ -31,19 +31,19 @@ $ python3 index.py -i test.yaml
                 "Resource": "*"
             },
             {
-                "Sid": "AccessAnalyzer-delete1-reg",
+                "Sid": "AccessAnalyzer-Delete1-reg",
                 "Effect": "Allow",
                 "Action": "access-analyzer:DeleteAnalyzer",
                 "Resource": "*"
             },
             {
-                "Sid": "LambdaFunction-create1",
+                "Sid": "LambdaFunction-Create1",
                 "Effect": "Allow",
                 "Action": "lambda:CreateFunction",
                 "Resource": "arn:aws:lambda:us-east-1:123456789012:function:*"
             },
             {
-                "Sid": "LambdaFunction-create2",
+                "Sid": "LambdaFunction-Create2",
                 "Effect": "Allow",
                 "Action": "iam:PassRole",
                 "Resource": "arn:aws:iam::123456789012:role/S3Access",
@@ -68,11 +68,12 @@ $ python3 index.py --stack-name mystack
         "Version": "2012-10-17",
         "Statement": [
             {
-                "Sid": "myresource-create1-reg",
+                "Sid": "myresource-Create1-reg",
                 "Effect": "Allow",
                 "Action": "ec2:ImportKeyPair",
                 "Resource": "*"
             }
+            ...
         ]
     }
 }
