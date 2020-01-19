@@ -45,7 +45,7 @@ class AWSLambdaFunctionPermissions:
                     'iam:PassedToService': 'lambda.amazonaws.com'
                 },
                 'StringLike': {
-                    'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+                    'iam:AssociatedResourceArn': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
                 }
             }
         )
@@ -92,9 +92,7 @@ class AWSLambdaFunctionPermissions:
                         'kms:CallerAccount': self.accountid
                     },
                     'StringLike': {
-                        'kms:ViaService': {
-                            'lambda.*.amazonaws.com'
-                        }
+                        'kms:ViaService': 'lambda.*.amazonaws.com'
                     }
                 }
             )
@@ -112,12 +110,10 @@ class AWSLambdaFunctionPermissions:
                         'kms:CallerAccount': self.accountid
                     },
                     'StringLike': {
-                        'kms:ViaService': {
-                            'lambda.*.amazonaws.com'
-                        }
+                        'kms:ViaService': 'lambda.*.amazonaws.com'
                     },
                     'Bool': {
-                        'kms:GrantIsForAWSResource': true
+                        'kms:GrantIsForAWSResource': True
                     }
                 }
             )

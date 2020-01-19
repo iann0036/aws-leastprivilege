@@ -241,7 +241,7 @@ class AWSS3BucketPermissions:
                         'iam:PassedToService': 's3.amazonaws.com'
                     },
                     'StringLike': {
-                        'arn:aws:s3:::{}'.format(bucketname)
+                        'iam:AssociatedResourceArn': 'arn:aws:s3:::{}'.format(bucketname)
                     }
                 }
             )

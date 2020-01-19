@@ -4,12 +4,18 @@
 
 Generates an IAM policy for the CloudFormation service role that adheres to least privilege.
 
+## Installation
+
+```
+pip3 install cfnlp
+```
+
 ## Usage
 
 ### Basic Examples
 
 ```
-$ python3 index.py -i test.yaml
+$ cfnlp -i test.yaml
 
 {
     "PolicyName": "root",
@@ -55,7 +61,7 @@ $ python3 index.py -i test.yaml
 ```
 
 ```
-$ python3 index.py --stack-name mystack
+$ cfnlp --stack-name mystack
 
 {
     "PolicyName": "root",

@@ -1,14 +1,8 @@
 import argparse
-from rolegen import RoleGen, InvalidArguments, InvalidTemplate
+from .rolegen import RoleGen, InvalidArguments, InvalidTemplate
 
 
-def main(args):
-    rolegen = RoleGen(args)
-    policy = rolegen.generate()
-    print(policy)
-
-
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("-i", "--input-filename", action="store", dest="input_file")
@@ -20,10 +14,16 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     try:
-        main(args)
+        rolegen = RoleGen(args)
+        policy = rolegen.generate()
+        print(policy)
     except InvalidArguments as e:
         print("ERROR: {}\n".format(e))
         parser.print_usage()
     except InvalidTemplate as e:
         print("ERROR: {}\n".format(e))
         parser.print_usage()
+
+
+if __name__ == "__main__":
+    main()
