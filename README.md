@@ -33,25 +33,19 @@ $ python3 index.py -i test.yaml
             {
                 "Sid": "AccessAnalyzer-delete1-reg",
                 "Effect": "Allow",
-                "Action": [
-                    "access-analyzer:DeleteAnalyzer"
-                ],
+                "Action": "access-analyzer:DeleteAnalyzer",
                 "Resource": "*"
             },
             {
                 "Sid": "LambdaFunction-create1",
                 "Effect": "Allow",
-                "Action": [
-                    "lambda:CreateFunction"
-                ],
+                "Action": "lambda:CreateFunction",
                 "Resource": "arn:aws:lambda:us-east-1:123456789012:function:*"
             },
             {
                 "Sid": "LambdaFunction-create2",
                 "Effect": "Allow",
-                "Action": [
-                    "iam:PassRole"
-                ],
+                "Action": "iam:PassRole",
                 "Resource": "arn:aws:iam::123456789012:role/S3Access",
                 "Condition": {
                     "StringEquals": {
@@ -74,11 +68,9 @@ $ python3 index.py --stack-name mystack
         "Version": "2012-10-17",
         "Statement": [
             {
-                "Sid": "test-create1-reg",
+                "Sid": "myresource-create1-reg",
                 "Effect": "Allow",
-                "Action": [
-                    "ec2:ImportKeyPair"
-                ],
+                "Action": "ec2:ImportKeyPair",
                 "Resource": "*"
             }
         ]
@@ -113,3 +105,17 @@ Overrides the region to specify in policy outputs and when retrieving deployed t
 #### --profile <name>
 
 When specified, the specified named profile credentials will be used for all data gathering AWS actions. The `AWS_PROFILE` environmental variable would also be respected if this property is not set.
+
+## Supported Resource Types
+
+The following resource types are supported with a per-type mapping:
+
+* AWS::CloudWatch::Alarm
+* AWS::EC2::Instance
+* AWS::EC2::SecurityGroup
+* AWS::IAM::Role
+* AWS::Lambda::Function
+* AWS::Lambda::Version
+* AWS::S3::Bucket
+* AWS::SNS::Topic
+* AWS::SQS::Queue

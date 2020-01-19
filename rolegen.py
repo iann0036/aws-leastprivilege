@@ -3,12 +3,12 @@ import json
 import sys
 from cfn_flip import to_json
 
-from mappings.ec2 import *
 from mappings.awslambda import *
+from mappings.cloudwatch import *
+from mappings.ec2 import *
+from mappings.iam import *
 from mappings.s3 import *
 from mappings.sns import *
-from mappings.iam import *
-from mappings.cloudwatch import *
 from mappings.sqs import *
 
 
