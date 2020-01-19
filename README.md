@@ -114,7 +114,7 @@ Policies will be created with data following the below preference:
 The generated policy will be as specific as possible when specifying actions, resources and conditions. Wildcard actions are never used and all conditions that are available will be populated unless:
 
 * The condition would take no effect or there is not enough information to specify the condition, or
-* The condition is a global condition, or
+* The condition is a [global condition](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_condition-keys.html), or
 * The condition applies to an update statement and would prevent the field from being freely changed, or
 * The condition relates to the tag keys/values
 
