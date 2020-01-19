@@ -10,47 +10,59 @@ class AWSSQSQueuePermissions:
         visibilitytimeout = self._get_property_exists(res, "VisibilityTimeout")
         tags_len = self._get_property_array_length(res, None, "Tags")
 
-        self.permissions.append({
-            'Sid': '{}-create1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
                 'sqs:CreateQueue',
                 'sqs:GetQueueAttributes'
             ],
-            'Resource': 'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
-        })
+            resources=[
+                'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
+            ]
+        )
         if tags_len:
-            self.permissions.append({
-                'Sid': '{}-createnm1'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'sqs:TagQueue'
                 ],
-                'Resource': 'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
-            })
-        if self.include_update_actions and (contentbaseddeduplication or delayseconds or fifoqueue or maximummessagesize or messageretentionperiod or receivemessagewaittimeseconds or visibilitytimeout):
-            self.permissions.append({
-                'Sid': '{}-update1'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+                resources=[
+                    'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
+                ],
+                nonmandatory=True
+            )
+        if contentbaseddeduplication or delayseconds or fifoqueue or maximummessagesize or messageretentionperiod or receivemessagewaittimeseconds or visibilitytimeout:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
                     'sqs:SetQueueAttributes'
                 ],
-                'Resource': 'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
-            })
+                resources=[
+                    'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
+                ]
+            )
             if tags_len:
-                self.permissions.append({
-                    'Sid': '{}-updatenm1'.format(resname),
-                    'Effect': 'Allow',
-                    'Action': [
+                self.permissions.add(
+                    resname=resname,
+                    lifecycle='Update',
+                    actions=[
                         'sqs:UntagQueue'
                     ],
-                    'Resource': 'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
-                })
-        self.permissions.append({
-            'Sid': '{}-delete1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+                    resources=[
+                        'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
+                    ],
+                    nonmandatory=True
+                )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Delete',
+            actions=[
                 'sqs:DeleteQueue'
             ],
-            'Resource': 'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
-        })
+            resources=[
+                'arn:aws:sqs:{}:{}:{}'.format(self.region, self.accountid, queuename)
+            ]
+        )

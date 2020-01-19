@@ -12,156 +12,180 @@ class AWSLambdaFunctionPermissions:
         securitygroupids = self._get_property_or_default(res, None, "VpcConfig", "SecurityGroupIds")
         subnetids = self._get_property_or_default(res, None, "VpcConfig", "SubnetIds")
 
-        self.permissions.append({
-            'Sid': '{}-create1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
                 'lambda:CreateFunction'
             ],
-            'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-        })
-        # TODO: iam:AssociatedResourceArn
-        self.permissions.append({
-            'Sid': '{}-create2'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+            resources=[
+                'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+            ]
+            # TODO: iam:AssociatedResourceArn
+        )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
                 'iam:PassRole'
             ],
-            'Resource': role,
-            'Condition': {
+            resources=[
+                role
+            ],
+            conditions={
                 'StringEquals': {
                     'iam:PassedToService': 'lambda.amazonaws.com'
                 }
             }
-        })
+        )
         if s3bucket and s3key:
             if s3objectversion:
-                self.permissions.append({
-                    'Sid': '{}-create3'.format(resname),
-                    'Effect': 'Allow',
-                    'Action': [
+                self.permissions.add(
+                    resname=resname,
+                    lifecycle='Create',
+                    actions=[
                         's3:GetObjectVersion'
                     ],
-                    'Resource': 'arn:aws:s3:::{}/{}'.format(s3bucket, s3key),
-                    'Condition': {
+                    resources=[
+                        'arn:aws:s3:::{}/{}'.format(s3bucket, s3key)
+                    ],
+                    conditions={
                         'StringEquals': {
                             's3:VersionId': s3objectversion
                         }
                     }
-                })
+                )
             else:
-                self.permissions.append({
-                    'Sid': '{}-create4'.format(resname),
-                    'Effect': 'Allow',
-                    'Action': [
+                self.permissions.add(
+                    resname=resname,
+                    lifecycle='Create',
+                    actions=[
                         's3:GetObject'
                     ],
-                    'Resource': 'arn:aws:s3:::{}/{}'.format(s3bucket, s3key)
-                })
+                    resources=[
+                        'arn:aws:s3:::{}/{}'.format(s3bucket, s3key)
+                    ]
+                )
         if kmskeyarn:
-            self.permissions.append({
-                'Sid': '{}-create5'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'kms:Encrypt',
                     'kms:CreateGrant'
                 ],
-                'Resource': kmskeyarn
-            })
+                resources=[
+                    kmskeyarn
+                ]
+            )
         if reservedconcurrentexecutions:
-            self.permissions.append({
-                'Sid': '{}-create6'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'lambda:PutFunctionConcurrency'
                 ],
-                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            })
+                resources=[
+                    'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+                ]
+            )
         if layers:
-            self.permissions.append({
-                'Sid': '{}-create7'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'lambda:GetLayerVersion'
                 ],
-                'Resource': layers
-            })
+                resources=self._forcelist(layers)
+            )
         if securitygroupids and subnetids:
-            self.permissions.append({
-                'Sid': '{}-create8'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'ec2:DescribeVpcs',
                     'ec2:DescribeSubnets',
                     'ec2:DescribeSecurityGroups'
                 ],
-                'Resource': '*'
-            })
-        self.permissions.append({
-            'Sid': '{}-createnm1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+                resources=['*']
+            )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
                 'lambda:GetFunction'
             ],
-            'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-        })
-        if self.include_update_actions:
-            self.permissions.append({
-                'Sid': '{}-update1'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
-                    'lambda:UpdateFunctionConfiguration',
-                    'lambda:UpdateFunctionCode'
-                ],
-                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            })
-        self.permissions.append({
-            'Sid': '{}-delete1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+            resources=[
+                'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+            ],
+            nonmandatory=True
+        )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Update',
+            actions=[
+                'lambda:UpdateFunctionConfiguration',
+                'lambda:UpdateFunctionCode'
+            ],
+            resources=[
+                'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+            ]
+        )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Delete',
+            actions=[
                 'lambda:DeleteFunction'
             ],
-            'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-        })
+            resources=[
+                'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+            ]
+        )
         if securitygroupids and subnetids:
-            self.permissions.append({
-                'Sid': '{}-delete2'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Delete',
+                actions=[
                     'ec2:DescribeNetworkInterfaces'
                 ],
-                'Resource': '*'
-            })
+                resources=['*']
+            )
 
 class AWSLambdaVersionPermissions:
     def get_permissions(self, resname, res):
         functionname = self._get_property_or_default(res, "*", "FunctionName").split(":").pop() # could be an arn or partial arn
         provisionedconcurrentexecutions = self._get_property_or_default(res, None, "ProvisionedConcurrencyConfig", "ProvisionedConcurrentExecutions")
 
-        self.permissions.append({
-            'Sid': '{}-create1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
                 'lambda:ListVersionsByFunction',
                 'lambda:PublishVersion'
             ],
-            'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-        })
+            resources=[
+                'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+            ]
+        )
         if provisionedconcurrentexecutions:
-            self.permissions.append({
-                'Sid': '{}-create2'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'lambda:GetProvisionedConcurrencyConfig',
                     'lambda:PutProvisionedConcurrencyConfig'
                 ],
-                'Resource': 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            })
-        self.permissions.append({
-            'Sid': '{}-delete1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+                resources=[
+                    'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+                ]
+            )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Delete',
+            actions=[
                 'lambda:DeleteFunction'
             ],
-            'Resource': 'arn:aws:lambda:{}:{}:function:{}:*'.format(self.region, self.accountid, functionname)
-        })
+            resources=[
+                'arn:aws:lambda:{}:{}:function:{}:*'.format(self.region, self.accountid, functionname)
+            ]
+        )

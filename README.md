@@ -16,8 +16,6 @@ Policies will be created with data following the below preference:
 ```
 $ python3 index.py -i test.yaml
 
-WARNING: Skipped the following types: AWS::S3::Bucket
-
 {
     "PolicyName": "root",
     "PolicyDocument": {

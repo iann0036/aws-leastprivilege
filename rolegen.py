@@ -20,6 +20,91 @@ class InvalidTemplate(Exception):
     pass
 
 
+class PermissionsManager:
+    def __init__(self, include_update_actions):
+        self.include_update_actions = include_update_actions
+        self.tracked_permissions = []
+        self.tracked_lifecycle_count = {}
+
+    def add(self, resname, lifecycle, actions, resources, conditions=None, nonmandatory=False, registry=False):
+        if not resname in self.tracked_lifecycle_count:
+            self.tracked_lifecycle_count[resname] = {
+                'Create': 0,
+                'Update': 0,
+                'Delete': 0
+            }
+
+        self.tracked_lifecycle_count[resname][lifecycle]+=1
+
+        non_mandatory_str = ''
+        if nonmandatory:
+            non_mandatory_str = '-nm'
+        registry_str = ''
+        if registry:
+            registry_str = '-reg'
+        
+        if lifecycle != "Update" or not self.include_update_actions:
+            tracked_permission = {
+                'Sid': '{}-{}{}{}{}'.format(resname, lifecycle, self.tracked_lifecycle_count[resname][lifecycle], non_mandatory_str, registry_str),
+                'Effect': 'Allow',
+                'Action': actions,
+                'Resource': resources
+            }
+            if conditions:
+                tracked_permission['Condition'] = conditions
+
+            self.tracked_permissions.append(tracked_permission)
+
+    def generate(self, consolidate_permissions):
+        output_permissions = self.tracked_permissions 
+
+        if consolidate_permissions:
+            output_permissions = self.consolidate_permissions(self.tracked_permissions)
+
+        for i, permission in enumerate(output_permissions):
+            if len(permission['Action']) == 1:
+                output_permissions[i]['Action'] = permission['Action'][0]
+            if len(permission['Resource']) == 1:
+                output_permissions[i]['Resource'] = permission['Resource'][0]
+
+        return {
+            "PolicyName": "root",
+            "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": output_permissions
+            }
+        }
+
+    def consolidate_permissions(self, permissions):
+        # TODO: Consolidate for same action, different resource and for combining wildcard w/ specific
+        new_permissions = []
+
+        while len(permissions):
+            permission = permissions.pop(0)
+            permission.pop('Sid', None)
+
+            i = 0
+            while i < len(permissions):
+                if (
+                    permissions[i]['Resource'] == permission['Resource'] and
+                    permissions[i]['Effect'] == permission['Effect'] and
+                    (
+                        ('Condition' not in permissions[i] and 'Condition' not in permission) or
+                        ('Condition' in permissions[i] and 'Condition' in permission and
+                         permissions[i]['Condition'] == permission['Condition'])
+                    )
+                ):
+                    permission['Action'] += permissions[i]['Action']
+                    permissions.pop(i)
+                else:
+                    i += 1
+
+            permission['Action'] = sorted(set(permission['Action']))  # remove duplicates
+            new_permissions.append(permission)
+
+        return new_permissions
+
+
 class RoleGen:
     def __init__(self, args):
         self.input_file = args.input_file
@@ -29,7 +114,7 @@ class RoleGen:
         self.consolidate_policy = args.consolidate_policy
         self.region = args.region or boto3.session.Session().region_name or 'us-east-1'
         self.template = None
-        self.permissions = []
+        self.permissions = PermissionsManager(self.include_update_actions)
         self.skipped_types = []
 
         session = boto3.session.Session(
@@ -65,16 +150,7 @@ class RoleGen:
         for resname, res in self.template["Resources"].items():
             self.get_permissions(resname, res)
 
-        if self.consolidate_policy:
-            self.permissions = self.consolidate_permissions(self.permissions)
-
-        policy = {
-            "PolicyName": "root",
-            "PolicyDocument": {
-                "Version": "2012-10-17",
-                "Statement": self.permissions
-            }
-        }
+        policy = self.permissions.generate(self.consolidate_policy)
 
         if len(self.skipped_types) > 0:
             sys.stderr.write("WARNING: Skipped the following types: {}\n".format(
@@ -85,35 +161,6 @@ class RoleGen:
                 "WARNING: The generated policy size is greater than the maximum 10240 character limit\n")
 
         return json.dumps(policy, indent=4, separators=(',', ': '))
-
-    def consolidate_permissions(self, permissions):
-        # TODO: Consolidate for same action, different resource and for combining wildcard w/ specific
-        new_permissions = []
-
-        while len(permissions):
-            permission = permissions.pop(0)
-            permission.pop('Sid', None)
-
-            i = 0
-            while i < len(permissions):
-                if (
-                    permissions[i]['Resource'] == permission['Resource'] and
-                    permissions[i]['Effect'] == permission['Effect'] and
-                    (
-                        ('Condition' not in permissions[i] and 'Condition' not in permission) or
-                        ('Condition' in permissions[i] and 'Condition' in permission and
-                         permissions[i]['Condition'] == permission['Condition'])
-                    )
-                ):
-                    permission['Action'] += self.permissions[i]['Action']
-                    permissions.pop(i)
-                else:
-                    i += 1
-
-            permission['Action'] = sorted(set(permission['Action']))  # remove duplicates
-            new_permissions.append(permission)
-
-        return new_permissions
 
     def _forcelist(self, prop):
         if isinstance(prop, list):
@@ -218,9 +265,10 @@ class RoleGen:
 
         for handler in handler_types:
             if handler in type_schema["handlers"] and "permissions" in type_schema["handlers"][handler]:
-                self.permissions.append({
-                    'Sid': '{}-{}1-reg'.format(resname, handler),
-                    'Effect': 'Allow',
-                    'Action': sorted(set(type_schema["handlers"][handler]["permissions"])),
-                    'Resource': '*'
-                })
+                self.permissions.add(
+                    resname=resname,
+                    lifecycle=handler[0].upper() + handler[1:],
+                    actions=sorted(set(type_schema["handlers"][handler]["permissions"])),
+                    resources=['*'],
+                    registry=True
+                )

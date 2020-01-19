@@ -4,84 +4,101 @@ class AWSSNSTopicPermissions:
         tags_len = self._get_property_array_length(res, None, "Tags")
         subscription_len = self._get_property_array_length(res, None, "Subscription")
 
-        self.permissions.append({
-            'Sid': '{}-create1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
                 'sns:CreateTopic',
                 'sns:GetTopicAttributes'
             ],
-            'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-        })
+            resources=[
+                'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+            ]
+        )
         if topicname:
-            self.permissions.append({
-                'Sid': '{}-create2'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'sns:ListTopics'
                 ],
-                'Resource': '*'
-            })
+                resources=['*']
+            )
         if tags_len:
-            self.permissions.append({
-                'Sid': '{}-createnm1'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'sns:TagResource'
                 ],
-                'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-            })
+                resources=[
+                    'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+                ],
+                nonmandatory=True
+            )
         if subscription_len:
-            # TODO: Conditions here
-            self.permissions.append({
-                'Sid': '{}-create3'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'sns:Subscribe'
                 ],
-                'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-            })
-        if self.include_update_actions:
-            self.permissions.append({
-                'Sid': '{}-update1'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
-                    'sns:SetTopicAttributes'
-                ],
-                'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-            })
-            if tags_len:
-                self.permissions.append({
-                    'Sid': '{}-updatenm1'.format(resname),
-                    'Effect': 'Allow',
-                    'Action': [
-                        'sns:UntagResource'
-                    ],
-                    'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-                })
-            if subscription_len:
-                self.permissions.append({
-                    'Sid': '{}-update2'.format(resname),
-                    'Effect': 'Allow',
-                    'Action': [
-                        'sns:ListSubscriptionsByTopic'
-                    ],
-                    'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-                })
+                resources=[
+                    'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+                ]
                 # TODO: Conditions here
-                self.permissions.append({
-                    'Sid': '{}-update3'.format(resname),
-                    'Effect': 'Allow',
-                    'Action': [
-                        'sns:Unsubscribe'
-                    ],
-                    'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-                })
-        self.permissions.append({
-            'Sid': '{}-delete1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+            )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Update',
+            actions=[
+                'sns:SetTopicAttributes'
+            ],
+            resources=[
+                'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+            ]
+        )
+        if tags_len:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'sns:UntagResource'
+                ],
+                resources=[
+                    'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+                ],
+                nonmandatory=True
+            )
+        if subscription_len:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'sns:ListSubscriptionsByTopic'
+                ],
+                resources=[
+                    'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+                ]
+                # TODO: Conditions here
+            )
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'sns:Unsubscribe'
+                ],
+                resources=[
+                    'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+                ]
+            )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Delete',
+            actions=[
                 'sns:DeleteTopic'
             ],
-            'Resource': 'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-        })
+            resources=[
+                'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
+            ]
+        )

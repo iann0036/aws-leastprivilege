@@ -5,23 +5,27 @@ class AWSCloudWatchAlarmPermissions:
         insufficientdataactions = self._get_property_or_default(res, None, "InsufficientDataActions")
         okactions = self._get_property_or_default(res, None, "OKActions")
 
-        self.permissions.append({
-            'Sid': '{}-create1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
                 'cloudwatch:PutMetricAlarm'
             ],
-            'Resource': 'arn:aws:cloudwatch:{}:{}:alarm:{}'.format(self.region, self.accountid, alarmname)
-        })
+            resources=[
+                'arn:aws:cloudwatch:{}:{}:alarm:{}'.format(self.region, self.accountid, alarmname)
+            ]
+        )
         if alarmname != "*":
-            self.permissions.append({
-                'Sid': '{}-create2'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'cloudwatch:DescribeAlarms'
                 ],
-                'Resource': 'arn:aws:cloudwatch:{}:{}:alarm:{}'.format(self.region, self.accountid, alarmname)
-            })
+                resources=[
+                    'arn:aws:cloudwatch:{}:{}:alarm:{}'.format(self.region, self.accountid, alarmname)
+                ]
+            )
         
         createslr = False
         if alarmactions:
@@ -38,24 +42,28 @@ class AWSCloudWatchAlarmPermissions:
                     createslr = True
 
         if createslr:
-            self.permissions.append({
-                'Sid': '{}-create3'.format(resname),
-                'Effect': 'Allow',
-                'Action': [
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'iam:CreateServiceLinkedRole'
                 ],
-                'Resource': 'arn:aws:iam::{}:role/aws-service-role/events.amazonaws.com/AWSServiceRoleForCloudWatchEvents'.format(self.accountid),
-                'Condition': {
+                resources=[
+                    'arn:aws:iam::{}:role/aws-service-role/events.amazonaws.com/AWSServiceRoleForCloudWatchEvents'.format(self.accountid)
+                ],
+                conditions={
                     'StringEquals': {
                         'iam:AWSServiceName': 'events.amazonaws.com'
                     }
                 }
-            })
-        self.permissions.append({
-            'Sid': '{}-delete1'.format(resname),
-            'Effect': 'Allow',
-            'Action': [
+            )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Delete',
+            actions=[
                 'cloudwatch:DeleteAlarms'
             ],
-            'Resource': 'arn:aws:cloudwatch:{}:{}:alarm:{}'.format(self.region, self.accountid, alarmname)
-        })
+            resources=[
+                'arn:aws:cloudwatch:{}:{}:alarm:{}'.format(self.region, self.accountid, alarmname)
+            ]
+        )
