@@ -93,7 +93,7 @@ The stack name or stack ID of a deployed CloudFormation stack to analyze. You mu
 
 #### --include-update-actions
 
-When specified, actions relating to stack updates (that don't trigger a resource replacement) will be included in the output. The default behaviour will not include the actions for stack updates.
+When specified, actions relating to stack updates (that don't trigger a resource replacement) will be included in the output if a value for its property has been set. The default behaviour will not include the actions for stack updates.
 
 #### --consolidate-policy
 
