@@ -4,11 +4,6 @@
 
 Generates an IAM policy for the CloudFormation service role that adheres to least privilege.
 
-Policies will be created with data following the below preference:
-1. Per-type mappings created by incrementally increasing required permissions
-2. Permissions retrieved from the [CloudFormation Registry](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry.html)
-3. No data available (a warning will be shown for missed types)
-
 ## Usage
 
 ### Basic Examples
@@ -106,6 +101,30 @@ Overrides the region to specify in policy outputs and when retrieving deployed t
 #### --profile <name>
 
 When specified, the specified named profile credentials will be used for all data gathering AWS actions. The `AWS_PROFILE` environmental variable would also be respected if this property is not set.
+
+## Policy Generation Logic
+
+Policies will be created with data following the below preference:
+1. Per-type mappings created by incrementally increasing required permissions
+2. Permissions retrieved from the [CloudFormation Registry](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/registry.html)
+3. No data available (a warning will be shown for missed types)
+
+### For supported per-type mapping resources
+
+The generated policy will be as specific as possible when specifying actions, resources and conditions. Wildcard actions are never used and all conditions that are available will be populated unless:
+
+* The condition would take no effect or there is not enough information to specify the condition, or
+* The condition is a global condition, or
+* The condition applies to an update statement and would prevent the field from being freely changed, or
+* The condition relates to the tag keys/values
+
+Resources may be fully or partially wildcarded however will be as specific as possible.
+
+Update statements are disabled by default. If enabled with the `--include-update-actions` option, only properties that have a value specified in the template will have an associated update statement that allows that value to be changed. Permissions required to add new properties may not have the permissions included in the policy.
+
+### For permissions retrieved from the CloudFormation Registry
+
+The generated policy will only include the actions specified in the resource type specification provided by the registry. All resources will be wildcarded and no conditions will apply.
 
 ## Supported Resource Types
 

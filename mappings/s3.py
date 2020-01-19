@@ -2,6 +2,7 @@ class AWSS3BucketPermissions:
     def get_permissions(self, resname, res):
         bucketname = self._get_property_or_default(res, "*", "BucketName")
         accesscontrol = self._get_property_or_default(res, None, "AccessControl")
+        accesscontrol_exists = self._get_property_exists(res, "AccessControl")
         analyticsconfigurations_len = self._get_property_array_length(res, None, "AnalyticsConfigurations")
         bucketencryption_len = self._get_property_array_length(res, None, "BucketEncryption", "ServerSideEncryptionConfiguration")
         corsconfiguration_len = self._get_property_array_length(res, None, "CorsConfiguration", "CorsRules")
@@ -14,7 +15,7 @@ class AWSS3BucketPermissions:
         objectlockconfiguration_exists = self._get_property_exists(res, "ObjectLockConfiguration")
         objectlockenabled = self._get_property_or_default(res, False, "ObjectLockEnabled")
         publicaccessblockonfiguration_exists = self._get_property_exists(res, "PublicAccessBlockConfiguration")
-        versioningconfiguration = self._get_property_or_default(res, None, "VersioningConfiguration", "Status")
+        versioningconfiguration_exists = self._get_property_exists(res, "VersioningConfiguration", "Status")
         websiteconfiguration_exists = self._get_property_exists(res, "WebsiteConfiguration")
         replicationconfigurationrole = self._get_property_or_default(res, None, "ReplicationConfiguration", "Role")
 
@@ -28,7 +29,32 @@ class AWSS3BucketPermissions:
                 'arn:aws:s3:::{}'.format(bucketname)
             ]
         )
-        if accesscontrol:
+        # Skipped:
+        # s3:x-amz-acl
+        # s3:x-amz-content-sha256
+        # s3:x-amz-grant-full-control
+        # s3:x-amz-grant-read
+        # s3:x-amz-grant-read-acp
+        # s3:x-amz-grant-write
+        # s3:x-amz-grant-write-acp
+        if accesscontrol_exists:
+            condition = None
+            acl_map = {
+                'Private': 'private',
+                'PublicRead': 'public-read',
+                'PublicReadWrite': 'public-read-write',
+                'AuthenticatedRead': 'authenticated-read',
+                'LogDeliveryWrite': 'log-delivery-write	',
+                'BucketOwnerRead': 'bucket-owner-read',
+                'BucketOwnerFullControl': 'bucket-owner-full-control',
+                'AwsExecRead': 'aws-exec-read'
+            }
+            if accesscontrol and accesscontrol in acl_map:
+                condition = {
+                    'StringEquals': {
+                        's3:x-amz-acl': acl_map[accesscontrol]
+                    }
+                }
             self.permissions.add(
                 resname=resname,
                 lifecycle='Create',
@@ -37,8 +63,16 @@ class AWSS3BucketPermissions:
                 ],
                 resources=[
                     'arn:aws:s3:::{}'.format(bucketname)
-                ]
+                ],
+                conditions=condition
             )
+            # Skipped:
+            # s3:x-amz-content-sha256
+            # s3:x-amz-grant-full-control
+            # s3:x-amz-grant-read
+            # s3:x-amz-grant-read-acp
+            # s3:x-amz-grant-write
+            # s3:x-amz-grant-write-acp
         if analyticsconfigurations_len:
             self.permissions.add(
                 resname=resname,
@@ -160,7 +194,7 @@ class AWSS3BucketPermissions:
                     'arn:aws:s3:::{}'.format(bucketname)
                 ]
             )
-        if versioningconfiguration:
+        if versioningconfiguration_exists:
             self.permissions.add(
                 resname=resname,
                 lifecycle='Create',
@@ -205,6 +239,9 @@ class AWSS3BucketPermissions:
                 conditions={
                     'StringEquals': {
                         'iam:PassedToService': 's3.amazonaws.com'
+                    },
+                    'StringLike': {
+                        'arn:aws:s3:::{}'.format(bucketname)
                     }
                 }
             )

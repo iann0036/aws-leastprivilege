@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-EC2-Instance
+Resources:
+    Instance:
+        Type: AWS::EC2::Instance
+        Properties:
+            ImageId: ami-0c91f97cadcc8499e

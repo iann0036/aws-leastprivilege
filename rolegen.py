@@ -181,7 +181,7 @@ class RoleGen:
 
             relpath = self._resolve_intrinsics(relpath)
 
-            if isinstance(relpath, str):  # TODO: Other primitive types
+            if isinstance(relpath, str) or isinstance(relpath, bool) or isinstance(relpath, int): # TODO: Other primitive types
                 value = relpath
             elif isinstance(relpath, list):
                 for listitem in relpath:

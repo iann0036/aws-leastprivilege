@@ -37,6 +37,23 @@ class AWSSNSTopicPermissions:
                 nonmandatory=True
             )
         if subscription_len:
+            condition = {
+                'ForAllValues:StringEquals': {
+                    'sns:Endpoint': [],
+                    'sns:Protocol': []
+                }
+            }
+            for subscription in res["Properties"]["Subscriptions"]:
+                if isinstance(subscription['Endpoint'], str):
+                    condition['ForAllValues:StringEquals']['sns:Endpoint'].append(subscription['Endpoint'])
+                else: # unresolvable
+                    condition = None
+                    break
+                if isinstance(subscription['Protocol'], str):
+                    condition['ForAllValues:StringEquals']['sns:Protocol'].append(subscription['Protocol'])
+                else: # unresolvable
+                    condition = None
+                    break
             self.permissions.add(
                 resname=resname,
                 lifecycle='Create',
@@ -45,8 +62,8 @@ class AWSSNSTopicPermissions:
                 ],
                 resources=[
                     'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
-                ]
-                # TODO: Conditions here
+                ],
+                conditions=condition
             )
         self.permissions.add(
             resname=resname,
@@ -80,7 +97,6 @@ class AWSSNSTopicPermissions:
                 resources=[
                     'arn:aws:sns:{}:{}:{}'.format(self.region, self.accountid, topicname)
                 ]
-                # TODO: Conditions here
             )
             self.permissions.add(
                 resname=resname,

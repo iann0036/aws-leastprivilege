@@ -44,21 +44,15 @@ class AWSIAMRolePermissions:
                 ]
             )
         if managedpolicyarns:
-            create_condition = {
-                'StringEquals': {}
-            }
-            delete_condition = {
+            condition = {
                 'StringEquals': {}
             }
             if permissionsboundary and permissionsboundary != "*":
-                create_condition['StringEquals']['iam:PermissionsBoundary'] = permissionsboundary
-                delete_condition['StringEquals']['iam:PermissionsBoundary'] = permissionsboundary
+                condition['StringEquals']['iam:PermissionsBoundary'] = permissionsboundary
             if managedpolicyarns != "*":
-                create_condition['StringEquals']['iam:PolicyARN'] = managedpolicyarns
-                delete_condition['StringEquals']['iam:PolicyARN'] = managedpolicyarns
-            if not create_condition['StringEquals']:
-                create_condition = None
-                delete_condition = None
+                condition['StringEquals']['iam:PolicyARN'] = managedpolicyarns
+            if not condition['StringEquals']:
+                condition = None
             
             self.permissions.add(
                 resname=resname,
@@ -69,7 +63,7 @@ class AWSIAMRolePermissions:
                 resources=[
                     'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
                 ],
-                conditions=create_condition
+                conditions=condition
             )
             self.permissions.add(
                 resname=resname,
@@ -90,7 +84,7 @@ class AWSIAMRolePermissions:
                 resources=[
                     'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
                 ],
-                conditions=delete_condition
+                conditions=condition
             )
         if policies_len:
             self.permissions.add(
@@ -102,18 +96,11 @@ class AWSIAMRolePermissions:
                 resources=[
                     'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
                 ],
-                conditions=create_condition,
                 nonmandatory=True
             )
-            create_condition = None
-            delete_condition = None
+            condition = None
             if permissionsboundary and permissionsboundary != "*":
-                create_condition = {
-                    'StringEquals': {
-                        'iam:PermissionsBoundary': permissionsboundary
-                    }
-                }
-                delete_condition = {
+                condition = {
                     'StringEquals': {
                         'iam:PermissionsBoundary': permissionsboundary
                     }
@@ -127,7 +114,7 @@ class AWSIAMRolePermissions:
                 resources=[
                     'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
                 ],
-                conditions=create_condition
+                conditions=condition
             )
             self.permissions.add(
                 resname=resname,
@@ -138,7 +125,7 @@ class AWSIAMRolePermissions:
                 resources=[
                     'arn:aws:iam::{}:role{}{}'.format(self.accountid, path, rolename)
                 ],
-                conditions=delete_condition
+                conditions=condition
             )
         if tags_len:
             self.permissions.add(

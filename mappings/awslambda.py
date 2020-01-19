@@ -12,6 +12,14 @@ class AWSLambdaFunctionPermissions:
         securitygroupids = self._get_property_or_default(res, None, "VpcConfig", "SecurityGroupIds")
         subnetids = self._get_property_or_default(res, None, "VpcConfig", "SubnetIds")
 
+        condition = None
+        if layers and layers != '*':
+            condition = {
+                'ForAllValues:StringLike': {
+                    'lambda:Layer': self._forcelist(layers)
+                }
+            }
+
         self.permissions.add(
             resname=resname,
             lifecycle='Create',
@@ -20,8 +28,8 @@ class AWSLambdaFunctionPermissions:
             ],
             resources=[
                 'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
-            ]
-            # TODO: iam:AssociatedResourceArn
+            ],
+            conditions=condition
         )
         self.permissions.add(
             resname=resname,
@@ -35,11 +43,14 @@ class AWSLambdaFunctionPermissions:
             conditions={
                 'StringEquals': {
                     'iam:PassedToService': 'lambda.amazonaws.com'
+                },
+                'StringLike': {
+                    'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
                 }
             }
         )
         if s3bucket and s3key:
-            if s3objectversion:
+            if s3objectversion and s3objectversion != '*':
                 self.permissions.add(
                     resname=resname,
                     lifecycle='Create',
@@ -72,11 +83,43 @@ class AWSLambdaFunctionPermissions:
                 lifecycle='Create',
                 actions=[
                     'kms:Encrypt',
+                ],
+                resources=[
+                    kmskeyarn
+                ],
+                conditions={
+                    'StringEquals': {
+                        'kms:CallerAccount': self.accountid
+                    },
+                    'StringLike': {
+                        'kms:ViaService': {
+                            'lambda.*.amazonaws.com'
+                        }
+                    }
+                }
+            )
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
                     'kms:CreateGrant'
                 ],
                 resources=[
                     kmskeyarn
-                ]
+                ],
+                conditions={
+                    'StringEquals': {
+                        'kms:CallerAccount': self.accountid
+                    },
+                    'StringLike': {
+                        'kms:ViaService': {
+                            'lambda.*.amazonaws.com'
+                        }
+                    },
+                    'Bool': {
+                        'kms:GrantIsForAWSResource': true
+                    }
+                }
             )
         if reservedconcurrentexecutions:
             self.permissions.add(
@@ -124,7 +167,16 @@ class AWSLambdaFunctionPermissions:
             resname=resname,
             lifecycle='Update',
             actions=[
-                'lambda:UpdateFunctionConfiguration',
+                'lambda:UpdateFunctionConfiguration'
+            ],
+            resources=[
+                'arn:aws:lambda:{}:{}:function:{}'.format(self.region, self.accountid, functionname)
+            ]
+        )
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Update',
+            actions=[
                 'lambda:UpdateFunctionCode'
             ],
             resources=[
@@ -172,7 +224,7 @@ class AWSLambdaVersionPermissions:
                 resname=resname,
                 lifecycle='Create',
                 actions=[
-                    'lambda:GetProvisionedConcurrencyConfig',
+                    'lambda:GetProvisionedConcurrencyConfig', # undocumented
                     'lambda:PutProvisionedConcurrencyConfig'
                 ],
                 resources=[
