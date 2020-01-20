@@ -89,10 +89,8 @@ class AWSLambdaFunctionPermissions:
                 ],
                 conditions={
                     'StringEquals': {
-                        'kms:CallerAccount': self.accountid
-                    },
-                    'StringLike': {
-                        'kms:ViaService': 'lambda.*.amazonaws.com'
+                        'kms:CallerAccount': self.accountid,
+                        'kms:ViaService': 'lambda.{}.amazonaws.com'.format(self.region)
                     }
                 }
             )
@@ -107,10 +105,8 @@ class AWSLambdaFunctionPermissions:
                 ],
                 conditions={
                     'StringEquals': {
-                        'kms:CallerAccount': self.accountid
-                    },
-                    'StringLike': {
-                        'kms:ViaService': 'lambda.*.amazonaws.com'
+                        'kms:CallerAccount': self.accountid,
+                        'kms:ViaService': 'lambda.{}.amazonaws.com'.format(self.region)
                     },
                     'Bool': {
                         'kms:GrantIsForAWSResource': True

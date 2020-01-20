@@ -43,7 +43,7 @@ class PermissionsManager:
         if registry:
             registry_str = '-reg'
         
-        if lifecycle != "Update" or not self.include_update_actions:
+        if lifecycle != "Update" or self.include_update_actions:
             tracked_permission = {
                 'Sid': '{}-{}{}{}{}'.format(resname, lifecycle, self.tracked_lifecycle_count[resname][lifecycle], non_mandatory_str, registry_str),
                 'Effect': 'Allow',
@@ -236,6 +236,9 @@ class RoleGen:
         return True
 
     def get_permissions(self, resname, res):
+        if res["Type"] in self.skipped_types:
+            return
+        
         mapped_classname = "{}Permissions".format(
             str(res["Type"]).replace("::", ""))
         if mapped_classname in globals():
