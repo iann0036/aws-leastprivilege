@@ -23,10 +23,17 @@ Resources:
                       - Effect: Allow
                         Action:
                           - ec2:RunInstances
-                        Resource: !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*'
-                        Condition:
-                            StringEquals:
-                                ec2:Region: !Ref AWS::Region
+                        Resource:
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:security-group/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:subnet/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:volume/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}::image/*'
+                      - Effect: Allow
+                        Action:
+                          - ec2:DescribeInstances
+                        Resource: '*'
               - PolicyName: EC2-Instance-delete
                 PolicyDocument:
                     Version: '2012-10-17'
