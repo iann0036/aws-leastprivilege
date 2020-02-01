@@ -34,6 +34,13 @@ Resources:
                         Action:
                           - ec2:DescribeInstances
                         Resource: '*'
+                      - Effect: Allow
+                        Action:
+                          - iam:PassRole
+                        Resource: '*'
+                        Condition:
+                            StringEquals:
+                                iam:PassedToService: ec2.amazonaws.com
               - PolicyName: EC2-Instance-delete
                 PolicyDocument:
                     Version: '2012-10-17'

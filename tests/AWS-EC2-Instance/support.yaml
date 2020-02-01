@@ -6,8 +6,125 @@ Resources:
         Properties:
             CidrBlock: 10.0.0.0/24
 
+    Subnet:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !Ref VPC
+            CidrBlock: 10.0.0.0/24
+            AvailabilityZone: !Sub "${AWS::Region}b"
+
+    SecurityGroup:
+        Type: AWS::EC2::SecurityGroup
+        Properties:
+            VpcId: !Ref VPC
+            GroupDescription: "svcrolegen-AWS-EC2-Instance-SecurityGroup"
+
+    LaunchTemplate:
+        Type: AWS::EC2::LaunchTemplate
+        Properties:
+            LaunchTemplateData:
+                ImageId: ami-0c91f97cadcc8499e
+                InstanceType: t3.medium
+                KeyName: mykey
+
+    InstanceRole: 
+        Type: AWS::IAM::Role
+        Properties: 
+            AssumeRolePolicyDocument: 
+                Version: "2012-10-17"
+                Statement: 
+                  - Effect: Allow
+                    Principal: 
+                        Service: ec2.amazonaws.com
+                    Action: sts:AssumeRole
+            Path: /
+            ManagedPolicyArns:
+              - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+    InstanceProfile: 
+        Type: AWS::IAM::InstanceProfile
+        Properties: 
+            Path: /
+            Roles: 
+              - !Ref InstanceRole
+
+    PlacementGroup:
+        Type: AWS::EC2::PlacementGroup
+        Properties: 
+            Strategy: cluster
+
+    # Host:
+    #     Type: AWS::EC2::Host
+    #     Properties: 
+    #         AutoPlacement: "on"
+    #         AvailabilityZone: !Sub "${AWS::Region}b"
+    #         InstanceType: a1.medium
+
+    SSMDocument: 
+        Type: "AWS::SSM::Document"
+        Properties: 
+            Name: somedocument-svcrolegen
+            Content: 
+                schemaVersion: "1.2"
+                description: "Join instances to an AWS Directory Service domain."
+                parameters: 
+                    directoryId: 
+                        type: "String"
+                        description: "(Required) The ID of the AWS Directory Service directory."
+                runtimeConfig: 
+                    aws:domainJoin: 
+                        properties: 
+                            directoryId: "{{ directoryId }}"
+
+    Volume:
+        Type: AWS::EC2::Volume
+        Properties: 
+            Size: 30
+            VolumeType: gp2
+            AvailabilityZone: !Sub "${AWS::Region}b"
+
 Outputs:
     VPC:
         Value: !Ref VPC
         Export:
             Name: svcrolegensupport-AWS-EC2-Instance-VPC
+
+    LaunchTemplate:
+        Value: !Ref LaunchTemplate
+        Export:
+            Name: svcrolegensupport-AWS-EC2-Instance-LaunchTemplate
+
+    Subnet:
+        Value: !Ref Subnet
+        Export:
+            Name: svcrolegensupport-AWS-EC2-Instance-Subnet
+
+    SecurityGroup:
+        Value: !Ref SecurityGroup
+        Export:
+            Name: svcrolegensupport-AWS-EC2-Instance-SecurityGroup
+
+    InstanceProfile:
+        Value: !Ref InstanceProfile
+        Export:
+            Name: svcrolegensupport-AWS-EC2-Instance-InstanceProfile
+
+    PlacementGroup:
+        Value: !Ref PlacementGroup
+        Export:
+            Name: svcrolegensupport-AWS-EC2-Instance-PlacementGroup
+
+    # Host:
+    #     Value: !Ref Host
+    #     Export:
+    #         Name: svcrolegensupport-AWS-EC2-Instance-Host
+
+    SSMDocument:
+        Value: !Ref SSMDocument
+        Export:
+            Name: svcrolegensupport-AWS-EC2-Instance-SSMDocument
+
+    Volume:
+        Value: !Ref Volume
+        Export:
+            Name: svcrolegensupport-AWS-EC2-Instance-Volume
