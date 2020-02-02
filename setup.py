@@ -12,7 +12,7 @@ if version < (3, 4):
     sys.exit(-1)
 
 setup(name='cfnlp',
-      version='0.1.1',
+      version='0.1.2',
       description='Generates an IAM policy for the CloudFormation service role that adheres to least privilege',
       long_description=long_description,
       long_description_content_type='text/markdown',

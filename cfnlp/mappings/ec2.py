@@ -342,7 +342,7 @@ class AWSEC2InstancePermissions:
             'arn:aws:ec2:{}:{}:volume/*'.format(self.region, self.accountid)
         ]
         snapshot_resources = [
-            'arn:aws:ec2:{}:{}:snapshot/*'.format(self.region, self.accountid)
+            'arn:aws:ec2:{}::snapshot/*'.format(self.region)
         ]
         volume_permissions_required = True
         snapshot_permissions_required = False
@@ -384,10 +384,10 @@ class AWSEC2InstancePermissions:
                         if not snapshot_permissions_required:
                             snapshot_resources = []
                             snapshot_permissions_required = True
-                        snapshot_resources.append('arn:aws:ec2:{}:{}:snapshot/{}'.format(self.region, self.accountid, blockdevicemapping['Ebs']['SnapshotId']))
+                        snapshot_resources.append('arn:aws:ec2:{}::snapshot/{}'.format(self.region, blockdevicemapping['Ebs']['SnapshotId']))
                     elif 'SnapshotId' in blockdevicemapping['Ebs'] and not isinstance(blockdevicemapping['Ebs']['SnapshotId'], str):
                         snapshot_resources = [
-                            'arn:aws:ec2:{}:{}:snapshot/*'.format(self.region, self.accountid)
+                            'arn:aws:ec2:{}::snapshot/*'.format(self.region)
                         ]
                         snapshot_permissions_required = True
         if volume_permissions_required:
@@ -463,7 +463,7 @@ class AWSEC2InstancePermissions:
                 'arn:aws:ec2:{}:{}:volume/*'.format(self.region, self.accountid),
                 'arn:aws:ec2:{}:{}:key-pair/*'.format(self.region, self.accountid),
                 'arn:aws:ec2:{}:{}:placement-group/*'.format(self.region, self.accountid),
-                'arn:aws:ec2:{}:{}:snapshot/*'.format(self.region, self.accountid)
+                'arn:aws:ec2:{}::snapshot/*'.format(self.region)
             ]
 
             self.permissions.add(

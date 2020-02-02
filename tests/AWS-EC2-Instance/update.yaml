@@ -7,23 +7,23 @@ Resources:
             # AdditionalInfo: Something # TODO
             # Affinity: host # TODO
             AvailabilityZone: !Sub "${AWS::Region}c"
-            # BlockDeviceMappings: 
-            #   # - DeviceName: /dev/sdc1
-            #   #   VirtualName: ephemeral0
-            #   - DeviceName: /dev/sda1
-            #     Ebs: 
-            #         SnapshotId: snap-00056f30
-            #         Encrypted: true
-            #         KmsKeyId: kms
-            #         VolumeSize: 50
-            #         VolumeType: io1
-            #         Iops: 1000
-            #         DeleteOnTermination: false
-              # - DeviceName: /dev/sdb1
-              #   NoDevice: {}
-            # CpuOptions: # TODO
-            #     CoreCount: 1
-            #     ThreadsPerCore: 1
+            BlockDeviceMappings: 
+              # - DeviceName: /dev/sdc1
+              #   VirtualName: ephemeral0
+              - DeviceName: /dev/sda1
+                Ebs: 
+                    SnapshotId: snap-00464485cf00e55ec
+                    # Encrypted: true
+                    # KmsKeyId: kms
+                    VolumeSize: 50
+                    VolumeType: io1
+                    Iops: 1000
+                    DeleteOnTermination: false
+              - DeviceName: /dev/sdb1
+                NoDevice: {}
+            CpuOptions: # TODO
+                CoreCount: 1
+                ThreadsPerCore: 1
             # CreditSpecification: 
             #     CPUCredits: unlimited
             # DisableApiTermination: true

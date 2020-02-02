@@ -7,30 +7,30 @@ Resources:
             # AdditionalInfo: Something # TODO
             # Affinity: host # TODO
             AvailabilityZone: !Sub "${AWS::Region}c" # checked
-            # BlockDeviceMappings: 
-            #   # - DeviceName: /dev/sdc1
-            #   #   VirtualName: ephemeral0
-            #   - DeviceName: /dev/sda1
-            #     Ebs: 
-            #         SnapshotId: snap-00056f30
-            #         Encrypted: true
-            #         KmsKeyId: kms
-            #         VolumeSize: 50
-            #         VolumeType: io1
-            #         Iops: 1000
-            #         DeleteOnTermination: false
-              # - DeviceName: /dev/sdb1
-              #   NoDevice: {}
-            # CpuOptions: # TODO, checked
-            #     CoreCount: 1
-            #     ThreadsPerCore: 1
-            # CreditSpecification: 
+            BlockDeviceMappings: # checked
+              # - DeviceName: /dev/sdc1
+              #   VirtualName: ephemeral0
+              - DeviceName: /dev/sda1
+                Ebs: 
+                    SnapshotId: snap-00464485cf00e55ec
+                    # Encrypted: true
+                    # KmsKeyId: kms
+                    VolumeSize: 50
+                    VolumeType: io1
+                    Iops: 1000
+                    DeleteOnTermination: false
+              - DeviceName: /dev/sdb1
+                NoDevice: {}
+            CpuOptions: # checked
+                CoreCount: 1
+                ThreadsPerCore: 1
+            # CreditSpecification: # TODO
             #     CPUCredits: unlimited
-            # DisableApiTermination: true
-            # EbsOptimized: false
-            # ElasticGpuSpecifications: 
+            # DisableApiTermination: true # checked
+            # EbsOptimized: false # checked
+            # ElasticGpuSpecifications: # checked
             #   - Type: eg1.large
-            # ElasticInferenceAccelerators: # TODO
+            # ElasticInferenceAccelerators: # checked
             #   - Count: 1
             #     Type: eia1.medium
             # HibernationOptions: # TODO, checked
@@ -74,9 +74,9 @@ Resources:
             # PrivateIpAddress: "10.0.0.5" # TODO
             # RamdiskId: ari-926b8bfb # TODO
             # SecurityGroupIds: # TODO
-            #   - sg
+            #   - sg-
             # SecurityGroups:
-            #   - sg
+            #   - sgname
             # SourceDestCheck: true
             # SsmAssociations: 
             #   - AssociationParameters: 

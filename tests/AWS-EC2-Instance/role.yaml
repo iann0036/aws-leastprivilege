@@ -34,6 +34,7 @@ Resources:
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:key-pair/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:launch-template/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:placement-group/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}::snapshot/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}::image/*'
                       # - Effect: Allow
                       #   Action:
