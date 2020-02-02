@@ -157,6 +157,14 @@ class AWSEC2InstancePermissions:
         blockdevicemappings_len = self._get_property_array_length(res, None, "BlockDeviceMappings")
         volumes_len = self._get_property_array_length(res, None, "Volumes")
         keyname = self._get_property_or_default(res, None, "KeyName")
+        tags_len = self._get_property_array_length(res, None, "Tags")
+        userdata_exists = self._get_property_exists(res, "UserData")
+        disableapitermination_exists = self._get_property_exists(res, "DisableApiTermination")
+        ebsoptimized_exists = self._get_property_exists(res, "EbsOptimized")
+        elasticgpuspecifications_len = self._get_property_array_length(res, None, "ElasticGpuSpecifications")
+        elasticinferenceaccelerators_len = self._get_property_array_length(res, None, "ElasticInferenceAccelerators")
+        monitoring_exists = self._get_property_exists(res, "Monitoring")
+        monitoring = self._get_property_or_default(res, None, "Monitoring")
 
         condition = {
             'StringEquals': {
@@ -503,6 +511,172 @@ class AWSEC2InstancePermissions:
                 }
             )
 
+        if elasticgpuspecifications_len:
+            condition = {
+                'StringEquals': {
+                    'ec2:Region': self.region,
+                    'ec2:ElasticGpuType': []
+                }
+            }
+            for elasticgpuspecification in res['Properties']['ElasticGpuSpecifications']:
+                if 'Type' in elasticgpuspecification and isinstance(elasticgpuspecification['Type'], str):
+                    condition['StringEquals']['ec2:ElasticGpuType'].append(elasticgpuspecification['Type'])
+                else:
+                    condition = None
+                    break
+            
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:RunInstances'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:elastic-gpu/*'.format(self.region, self.accountid)
+                ],
+                conditions=condition
+            )
+
+        if elasticinferenceaccelerators_len:
+            condition = {
+                'StringEquals': {
+                    'ec2:Region': self.region,
+                    'elastic-inference:ElasticInferenceAcceleratorType': []
+                }
+            }
+            for elasticinferenceaccelerator in res['Properties']['ElasticInferenceAccelerators']:
+                if 'Type' in elasticinferenceaccelerator and isinstance(elasticinferenceaccelerator['Type'], str):
+                    condition['StringEquals']['elastic-inference:ElasticInferenceAcceleratorType'].append(elasticinferenceaccelerator['Type'])
+                else:
+                    condition = None
+                    break
+            
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:RunInstances'
+                ],
+                resources=[
+                    'arn:aws:elastic-inference:{}:{}:elastic-inference-accelerator/*'.format(self.region, self.accountid)
+                ],
+                conditions=condition
+            )
+
+        if tags_len:
+            condition = {
+                'StringEquals': {
+                    'ec2:Region': self.region
+                    # 'ec2:RootDeviceType'
+                }
+            }
+            if availabilityzone and availabilityzone != '*':
+                condition['StringEquals']['ec2:AvailabilityZone'] = availabilityzone
+            if ebsoptimized != '*':
+                if 'Bool' not in condition:
+                    condition['Bool'] = {}
+                condition['Bool']['ec2:EbsOptimized'] = str(ebsoptimized).lower()
+            if tenancy != '*':
+                condition['StringEquals']['ec2:Tenancy'] = tenancy
+            if instancetype != '*':
+                condition['StringEquals']['ec2:InstanceType'] = instancetype
+            if iaminstanceprofile and iaminstanceprofile != '*':
+                condition['StringEquals']['ec2:InstanceProfile'] = iaminstanceprofile
+            if placementgroupname and placementgroupname != '*':
+                condition['StringEquals']['ec2:PlacementGroup'] = 'arn:aws:ec2:{}:{}:placement-group/{}'.format(self.region, self.accountid, placementgroupname)
+            
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:CreateTags'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:instance/*'.format(self.region, self.accountid)
+                ],
+                conditions=condition
+            )
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'ec2:DeleteTags'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:instance/*'.format(self.region, self.accountid)
+                ],
+                conditions=condition
+            )
+
+        if volumes_len:
+            condition = {
+                'StringEquals': {
+                    'ec2:Region': self.region
+                    # 'ec2:RootDeviceType'
+                }
+            }
+            if availabilityzone and availabilityzone != '*':
+                condition['StringEquals']['ec2:AvailabilityZone'] = availabilityzone
+            if ebsoptimized != '*':
+                if 'Bool' not in condition:
+                    condition['Bool'] = {}
+                condition['Bool']['ec2:EbsOptimized'] = str(ebsoptimized).lower()
+            if tenancy != '*':
+                condition['StringEquals']['ec2:Tenancy'] = tenancy
+            if instancetype != '*':
+                condition['StringEquals']['ec2:InstanceType'] = instancetype
+            if iaminstanceprofile and iaminstanceprofile != '*':
+                condition['StringEquals']['ec2:InstanceProfile'] = iaminstanceprofile
+            if placementgroupname and placementgroupname != '*':
+                condition['StringEquals']['ec2:PlacementGroup'] = 'arn:aws:ec2:{}:{}:placement-group/{}'.format(self.region, self.accountid, placementgroupname)
+
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:AttachVolume',
+                    'ec2:DetachVolume'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:instance/*'.format(self.region, self.accountid)
+                ],
+                conditions=condition
+            )
+
+            condition = {
+                'StringEquals': {
+                    'ec2:Region': self.region
+                }
+            }
+            if availabilityzone and availabilityzone != '*':
+                condition['StringEquals']['ec2:AvailabilityZone'] = availabilityzone
+            
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:AttachVolume',
+                    'ec2:DetachVolume'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:volume/*'.format(self.region, self.accountid)
+                ],
+                conditions=condition
+            )
+
+        if monitoring_exists:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'ec2:MonitorInstances',
+                    'ec2:UnmonitorInstances'
+                ],
+                resources=[
+                    '*'
+                ]
+            )
+
         self.permissions.add(
             resname=resname,
             lifecycle='Create',
@@ -514,6 +688,51 @@ class AWSEC2InstancePermissions:
             ]
         )
 
+        # Update
+        if userdata_exists or ebsoptimized_exists:
+            condition = {
+                'StringEquals': {
+                    'ec2:Region': self.region
+                    # ec2:RootDeviceType
+                }
+            }
+            if availabilityzone and availabilityzone != '*':
+                condition['StringEquals']['ec2:AvailabilityZone'] = availabilityzone
+            if ebsoptimized != '*':
+                if 'Bool' not in condition:
+                    condition['Bool'] = {}
+                condition['Bool']['ec2:EbsOptimized'] = str(ebsoptimized).lower()
+            if tenancy != '*':
+                condition['StringEquals']['ec2:Tenancy'] = tenancy
+            if instancetype != '*':
+                condition['StringEquals']['ec2:InstanceType'] = instancetype
+            if iaminstanceprofile and iaminstanceprofile != '*':
+                condition['StringEquals']['ec2:InstanceProfile'] = iaminstanceprofile
+            if placementgroupname and placementgroupname != '*':
+                condition['StringEquals']['ec2:PlacementGroup'] = 'arn:aws:ec2:{}:{}:placement-group/{}'.format(self.region, self.accountid, placementgroupname)
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'ec2:StartInstances',
+                    'ec2:StopInstances'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:instance/*'.format(self.region, self.accountid)
+                ],
+                conditions=condition
+            )
+        if userdata_exists or disableapitermination_exists or ebsoptimized_exists:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'ec2:ModifyInstanceAttribute'
+                ],
+                resources=['*']
+            )
+
+        # Delete
         condition = {
             'StringEquals': {
                 'ec2:Region': self.region

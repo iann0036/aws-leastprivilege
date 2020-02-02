@@ -6,56 +6,54 @@ Resources:
         Properties:
             # AdditionalInfo: Something # TODO
             # Affinity: host # TODO
-            AvailabilityZone: !Sub "${AWS::Region}b"
-            BlockDeviceMappings: 
-              # - DeviceName: /dev/sdc1
-              #   VirtualName: ephemeral0
-              - DeviceName: /dev/sda1
-                Ebs: 
-                    SnapshotId: snap-00056f30
-                    Encrypted: true
-                    KmsKeyId: kms
-                    VolumeSize: 50
-                    VolumeType: io1
-                    Iops: 1000
-                    DeleteOnTermination: false
-              - DeviceName: /dev/sdb1
-                NoDevice: {}
-            # CpuOptions: # TODO
+            AvailabilityZone: !Sub "${AWS::Region}c" # checked
+            # BlockDeviceMappings: 
+            #   # - DeviceName: /dev/sdc1
+            #   #   VirtualName: ephemeral0
+            #   - DeviceName: /dev/sda1
+            #     Ebs: 
+            #         SnapshotId: snap-00056f30
+            #         Encrypted: true
+            #         KmsKeyId: kms
+            #         VolumeSize: 50
+            #         VolumeType: io1
+            #         Iops: 1000
+            #         DeleteOnTermination: false
+              # - DeviceName: /dev/sdb1
+              #   NoDevice: {}
+            # CpuOptions: # TODO, checked
             #     CoreCount: 1
             #     ThreadsPerCore: 1
-            CreditSpecification: 
-                CPUCredits: unlimited
-            DisableApiTermination: true
-            EbsOptimized: true
-            ElasticGpuSpecifications: 
-              - Type: eg1.medium
+            # CreditSpecification: 
+            #     CPUCredits: unlimited
+            # DisableApiTermination: true
+            # EbsOptimized: false
+            # ElasticGpuSpecifications: 
+            #   - Type: eg1.large
             # ElasticInferenceAccelerators: # TODO
             #   - Count: 1
             #     Type: eia1.medium
-            #   - Count: 1
-            #     Type: eia1.medium
-            HibernationOptions: 
-                Configured: true
+            # HibernationOptions: # TODO, checked
+            #     Configured: true
             # HostId: !ImportValue svcrolegensupport-AWS-EC2-Instance-Host # TODO
-            # HostResourceGroupArn: String # TODO
-            IamInstanceProfile: !ImportValue svcrolegensupport-AWS-EC2-Instance-InstanceProfile
-            ImageId: ami-0112bb4988eedc594
-            InstanceInitiatedShutdownBehavior: terminate
-            InstanceType: a1.medium
+            # HostResourceGroupArn: String # TODO, checked
+            # IamInstanceProfile: !ImportValue svcrolegensupport-AWS-EC2-Instance-InstanceProfile
+            ImageId: ami-062f7200baf2fa504 # checked
+            # InstanceInitiatedShutdownBehavior: terminate
+            InstanceType: c5.large # checked
             # Ipv6AddressCount: 1 # TODO
             # Ipv6Addresses: 
             #   - Ipv6Address: "::"
             # KernelId: aki-33990e09
-            KeyName: demo
-            LaunchTemplate: 
+            KeyName: demo # checked
+            LaunchTemplate: # checked
                 LaunchTemplateId: !ImportValue svcrolegensupport-AWS-EC2-Instance-LaunchTemplate
                 # LaunchTemplateName: String
                 Version: "1"
             # LicenseSpecifications: 
             #   - LicenseConfigurationArn: "" # TODO
-            Monitoring: true
-            NetworkInterfaces:
+            # Monitoring: true # checked
+            NetworkInterfaces: # checked
               - # AssociatePublicIpAddress: true # TODO
                 DeleteOnTermination: true
                 Description: somedescription
@@ -72,26 +70,26 @@ Resources:
                     PrivateIpAddress: "10.0.0.5"
                 SecondaryPrivateIpAddressCount: 1
                 SubnetId: !ImportValue svcrolegensupport-AWS-EC2-Instance-Subnet
-            PlacementGroupName: !ImportValue svcrolegensupport-AWS-EC2-Instance-PlacementGroup
+            PlacementGroupName: !ImportValue svcrolegensupport-AWS-EC2-Instance-PlacementGroup # checked
             # PrivateIpAddress: "10.0.0.5" # TODO
             # RamdiskId: ari-926b8bfb # TODO
             # SecurityGroupIds: # TODO
             #   - sg
             # SecurityGroups:
             #   - sg
-            SourceDestCheck: true
-            SsmAssociations: 
-              - AssociationParameters: 
-                  - Key: directoryId
-                    Value: 
-                      - someid
-                DocumentName: !ImportValue svcrolegensupport-AWS-EC2-Instance-SSMDocument
+            # SourceDestCheck: true
+            # SsmAssociations: 
+            #   - AssociationParameters: 
+            #       - Key: directoryId
+            #         Value: 
+            #           - someid
+            #     DocumentName: !ImportValue svcrolegensupport-AWS-EC2-Instance-SSMDocument
             # SubnetId: subnet # TODO
-            Tags: 
-              - Key: FOO
-                Value: BAR
+            # Tags: # checked
+            #   - Key: FOO
+            #     Value: BAR
             # Tenancy: host # TODO
-            UserData: !Base64 "#!/bin/bash"
-            Volumes: 
-              - Device: /dev/sdd1
-                VolumeId: !ImportValue svcrolegensupport-AWS-EC2-Instance-Volume
+            UserData: !Base64 "#!/bin/bash" # checked
+            # Volumes: # checked
+            #   - Device: /dev/sdd
+            #     VolumeId: !ImportValue svcrolegensupport-AWS-EC2-Instance-Volume

@@ -6,12 +6,21 @@ Resources:
         Properties:
             CidrBlock: 10.0.0.0/24
 
+    VPCCidrBlockIpv6:
+        Type: AWS::EC2::VPCCidrBlock
+        Properties:
+            VpcId: !Ref VPC
+            AmazonProvidedIpv6CidrBlock: true
+
     Subnet:
+        DependsOn:
+          - VPCCidrBlockIpv6
         Type: AWS::EC2::Subnet
         Properties:
             VpcId: !Ref VPC
             CidrBlock: 10.0.0.0/24
-            AvailabilityZone: !Sub "${AWS::Region}b"
+            Ipv6CidrBlock: !Select [1, !Cidr [!Select [0, !GetAtt VPC.Ipv6CidrBlocks], 256, 64] ]
+            AvailabilityZone: !Sub "${AWS::Region}c"
 
     SecurityGroup:
         Type: AWS::EC2::SecurityGroup
@@ -23,9 +32,7 @@ Resources:
         Type: AWS::EC2::LaunchTemplate
         Properties:
             LaunchTemplateData:
-                ImageId: ami-0c91f97cadcc8499e
-                InstanceType: t3.medium
-                KeyName: mykey
+                KeyName: demo
 
     InstanceRole: 
         Type: AWS::IAM::Role
@@ -57,7 +64,7 @@ Resources:
     #     Type: AWS::EC2::Host
     #     Properties: 
     #         AutoPlacement: "on"
-    #         AvailabilityZone: !Sub "${AWS::Region}b"
+    #         AvailabilityZone: !Sub "${AWS::Region}c"
     #         InstanceType: a1.medium
 
     SSMDocument: 
@@ -81,7 +88,7 @@ Resources:
         Properties: 
             Size: 30
             VolumeType: gp2
-            AvailabilityZone: !Sub "${AWS::Region}b"
+            AvailabilityZone: !Sub "${AWS::Region}c"
 
 Outputs:
     VPC:

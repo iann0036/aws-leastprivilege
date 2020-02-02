@@ -25,11 +25,35 @@ Resources:
                           - ec2:RunInstances
                         Resource:
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:elastic-gpu/*'
+                          - !Sub 'arn:aws:elastic-inference:${AWS::Region}:${AWS::AccountId}:elastic-inference-accelerator/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:network-interface/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:security-group/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:subnet/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:volume/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:key-pair/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:launch-template/*'
+                          - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:placement-group/*'
                           - !Sub 'arn:aws:ec2:${AWS::Region}::image/*'
+                      # - Effect: Allow
+                      #   Action:
+                      #     - ec2:StartInstances
+                      #     - ec2:StopInstances
+                      #     - ec2:ModifyInstanceAttribute
+                      #   Resource:
+                      #     - '*'
+                      # - Effect: Allow
+                      #   Action:
+                      #     - ec2:CreateTags
+                      #     - ec2:DeleteTags
+                      #   Resource: !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*'
+                      # - Effect: Allow
+                      #   Action:
+                      #     - ec2:AttachVolume
+                      #     - ec2:DetachVolume
+                      #   Resource:
+                      #     - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:instance/*'
+                      #     - !Sub 'arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:volume/*'
                       - Effect: Allow
                         Action:
                           - ec2:DescribeInstances

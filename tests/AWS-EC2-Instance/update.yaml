@@ -4,4 +4,92 @@ Resources:
     Instance:
         Type: AWS::EC2::Instance
         Properties:
-            ImageId: ami-0c91f97cadcc8499e
+            # AdditionalInfo: Something # TODO
+            # Affinity: host # TODO
+            AvailabilityZone: !Sub "${AWS::Region}c"
+            # BlockDeviceMappings: 
+            #   # - DeviceName: /dev/sdc1
+            #   #   VirtualName: ephemeral0
+            #   - DeviceName: /dev/sda1
+            #     Ebs: 
+            #         SnapshotId: snap-00056f30
+            #         Encrypted: true
+            #         KmsKeyId: kms
+            #         VolumeSize: 50
+            #         VolumeType: io1
+            #         Iops: 1000
+            #         DeleteOnTermination: false
+              # - DeviceName: /dev/sdb1
+              #   NoDevice: {}
+            # CpuOptions: # TODO
+            #     CoreCount: 1
+            #     ThreadsPerCore: 1
+            # CreditSpecification: 
+            #     CPUCredits: unlimited
+            # DisableApiTermination: true
+            # EbsOptimized: false
+            # ElasticGpuSpecifications: 
+            #   - Type: eg1.large
+            # ElasticInferenceAccelerators: # TODO
+            #   - Count: 1
+            #     Type: eia1.medium
+            # HibernationOptions: 
+            #     Configured: true
+            # HostId: !ImportValue svcrolegensupport-AWS-EC2-Instance-Host # TODO
+            # HostResourceGroupArn: String # TODO
+            # IamInstanceProfile: !ImportValue svcrolegensupport-AWS-EC2-Instance-InstanceProfile
+            ImageId: ami-062f7200baf2fa504
+            # InstanceInitiatedShutdownBehavior: terminate
+            InstanceType: c5.large
+            # Ipv6AddressCount: 1 # TODO
+            # Ipv6Addresses: 
+            #   - Ipv6Address: "::"
+            # KernelId: aki-33990e09
+            KeyName: demo
+            LaunchTemplate: 
+                LaunchTemplateId: !ImportValue svcrolegensupport-AWS-EC2-Instance-LaunchTemplate
+                # LaunchTemplateName: String
+                Version: "1"
+            # LicenseSpecifications: 
+            #   - LicenseConfigurationArn: "" # TODO
+            # Monitoring: false
+            NetworkInterfaces:
+              - # AssociatePublicIpAddress: true # TODO
+                DeleteOnTermination: true
+                Description: somedescription
+                DeviceIndex: "0"
+                GroupSet: 
+                  - !ImportValue svcrolegensupport-AWS-EC2-Instance-SecurityGroup
+                Ipv6AddressCount: 1
+                # Ipv6Addresses: 
+                #   - Ipv6Address: "::"
+                # NetworkInterfaceId: "nic" # TODO
+                # PrivateIpAddress: "10.0.0.5"
+                PrivateIpAddresses: 
+                  - Primary: true
+                    PrivateIpAddress: "10.0.0.5"
+                SecondaryPrivateIpAddressCount: 1
+                SubnetId: !ImportValue svcrolegensupport-AWS-EC2-Instance-Subnet
+            PlacementGroupName: !ImportValue svcrolegensupport-AWS-EC2-Instance-PlacementGroup
+            # PrivateIpAddress: "10.0.0.5" # TODO
+            # RamdiskId: ari-926b8bfb # TODO
+            # SecurityGroupIds: # TODO
+            #   - sg
+            # SecurityGroups:
+            #   - sg
+            # SourceDestCheck: true
+            # SsmAssociations: 
+            #   - AssociationParameters: 
+            #       - Key: directoryId
+            #         Value: 
+            #           - someid
+            #     DocumentName: !ImportValue svcrolegensupport-AWS-EC2-Instance-SSMDocument
+            # SubnetId: subnet # TODO
+            # Tags: 
+            #   - Key: FOO2
+            #     Value: BAR2
+            # Tenancy: host # TODO
+            UserData: !Base64 "#!/bin/bash"
+            # Volumes: 
+            #   - Device: /dev/sde
+            #     VolumeId: !ImportValue svcrolegensupport-AWS-EC2-Instance-Volume
