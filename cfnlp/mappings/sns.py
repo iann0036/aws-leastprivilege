@@ -43,7 +43,7 @@ class AWSSNSTopicPermissions:
                     'sns:Protocol': []
                 }
             }
-            for subscription in res["Properties"]["Subscriptions"]:
+            for subscription in res["Properties"]["Subscription"]:
                 if isinstance(subscription['Endpoint'], str):
                     condition['ForAllValues:StringEquals']['sns:Endpoint'].append(subscription['Endpoint'])
                 else: # unresolvable
