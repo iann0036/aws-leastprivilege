@@ -1,0 +1,46 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-EC2-VPC-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-EC2-VPC-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: EC2-VPC-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - ec2:CreateVpc
+                          - ec2:DescribeVpcs
+                          - ec2:ModifyVpcAttribute
+                          - ec2:CreateTags
+                        Resource: '*'
+              - PolicyName: EC2-VPC-update
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - ec2:DeleteTags
+                          - ec2:ModifyVpcTenancy
+                        Resource: '*'
+              - PolicyName: EC2-VPC-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - ec2:DeleteVpc
+                        Resource: '*'

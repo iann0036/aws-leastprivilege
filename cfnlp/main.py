@@ -1,4 +1,5 @@
 import argparse
+import sys
 from .rolegen import RoleGen, InvalidArguments, InvalidTemplate
 
 
@@ -18,11 +19,15 @@ def main():
         policy = rolegen.generate()
         print(policy)
     except InvalidArguments as e:
-        print("ERROR: {}\n".format(e))
+        sys.stderr.write("ERROR: {}\n".format(e))
+        sys.stderr.flush()
         parser.print_usage()
+        sys.exit(2)
     except InvalidTemplate as e:
-        print("ERROR: {}\n".format(e))
+        sys.stderr.write("ERROR: {}\n".format(e))
+        sys.stderr.flush()
         parser.print_usage()
+        sys.exit(1)
 
 
 if __name__ == "__main__":

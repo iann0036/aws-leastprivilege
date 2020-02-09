@@ -764,3 +764,139 @@ class AWSEC2InstancePermissions:
             ],
             conditions=condition
         )
+
+class AWSEC2VPCPermissions:
+    def get_permissions(self, resname, res):
+        tags_len = self._get_property_array_length(res, None, "Tags")
+        instancetenancy = self._get_property_or_default(res, None, "InstanceTenancy")
+
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
+                'ec2:CreateVpc',
+                'ec2:DescribeVpcs',
+                'ec2:ModifyVpcAttribute' # EnableDnsHostnames
+            ],
+            resources=['*']
+        )
+
+        if tags_len:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:CreateTags'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:vpc/*'.format(self.region, self.accountid)
+                ],
+                conditions={
+                    'StringEquals': {
+                        'ec2:Region': self.region
+                    }
+                }
+            )
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'ec2:DeleteTags'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:vpc/*'.format(self.region, self.accountid)
+                ],
+                conditions={
+                    'StringEquals': {
+                        'ec2:Region': self.region
+                    }
+                }
+            )
+        if instancetenancy:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'ec2:ModifyVpcTenancy'
+                ],
+                resources=[
+                    '*'
+                ]
+            )
+
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Delete',
+            actions=[
+                'ec2:DeleteVpc'
+            ],
+            resources=['*']
+        )
+
+class AWSEC2SubnetPermissions:
+    def get_permissions(self, resname, res):
+        tags_len = self._get_property_array_length(res, None, "Tags")
+        assignipv6 = self._get_property_or_default(res, None, "AssignIpv6AddressOnCreation")
+        mappublicip = self._get_property_or_default(res, None, "MapPublicIpOnLaunch")
+
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Create',
+            actions=[
+                'ec2:CreateSubnet',
+                'ec2:DescribeSubnets'
+            ],
+            resources=['*']
+        )
+
+        if tags_len:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:CreateTags'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:subnet/*'.format(self.region, self.accountid)
+                ],
+                conditions={
+                    'StringEquals': {
+                        'ec2:Region': self.region
+                    }
+                }
+            )
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Update',
+                actions=[
+                    'ec2:DeleteTags'
+                ],
+                resources=[
+                    'arn:aws:ec2:{}:{}:subnet/*'.format(self.region, self.accountid)
+                ],
+                conditions={
+                    'StringEquals': {
+                        'ec2:Region': self.region
+                    }
+                }
+            )
+
+        if assignipv6 or mappublicip:
+            self.permissions.add(
+                resname=resname,
+                lifecycle='Create',
+                actions=[
+                    'ec2:ModifySubnetAttribute'
+                ],
+                resources=['*']
+            )
+
+        self.permissions.add(
+            resname=resname,
+            lifecycle='Delete',
+            actions=[
+                'ec2:DeleteSubnet'
+            ],
+            resources=['*']
+        )
+

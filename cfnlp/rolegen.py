@@ -160,6 +160,8 @@ class RoleGen:
             sys.stderr.write(
                 "WARNING: The generated policy size is greater than the maximum 10240 character limit\n")
 
+        sys.stderr.flush()
+
         return json.dumps(policy, indent=4, separators=(',', ': '))
 
     def _forcelist(self, prop):
@@ -243,14 +245,17 @@ class RoleGen:
             str(res["Type"]).replace("::", ""))
         if mapped_classname in globals():
             globals()[mapped_classname].get_permissions(self, resname, res)
-        else:
+        elif not res["Type"].startswith("Custom::"):
             self.get_remote_permissions_for_type(resname, res["Type"])
 
     def get_remote_permissions_for_type(self, resname, restype):
-        remote_type_def = self.cfnclient.describe_type(
-            Type='RESOURCE',
-            TypeName=restype
-        )
+        try:
+            remote_type_def = self.cfnclient.describe_type(
+                Type='RESOURCE',
+                TypeName=restype
+            )
+        except:
+            return
 
         if remote_type_def['DeprecatedStatus'] != "LIVE":
             self.skipped_types.append(restype)

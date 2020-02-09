@@ -1,0 +1,15 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-EC2-Subnet
+Resources:
+    Subnet:
+        Type: AWS::EC2::Subnet
+        Properties:
+            VpcId: !ImportValue svcrolegensupport-AWS-EC2-Subnet-VPC
+            AvailabilityZone: !Sub '${AWS::Region}b'
+            CidrBlock: 10.0.0.0/24
+            AssignIpv6AddressOnCreation: true
+            Ipv6CidrBlock: !ImportValue svcrolegensupport-AWS-EC2-Subnet-Ipv6CidrBlock
+            # MapPublicIpOnLaunch: true
+            Tags: 
+              - Key: FOO
+                Value: BAR

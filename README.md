@@ -139,6 +139,8 @@ The following resource types are supported with a per-type mapping:
 * AWS::CloudWatch::Alarm
 * AWS::EC2::Instance
 * AWS::EC2::SecurityGroup
+* AWS::EC2::Subnet
+* AWS::EC2::VPC
 * AWS::IAM::Role
 * AWS::Lambda::Function
 * AWS::Lambda::Version
