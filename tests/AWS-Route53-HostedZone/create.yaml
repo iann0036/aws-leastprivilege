@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Route53-HostedZone
+Resources:
+    HostedZone:
+        Type: AWS::Route53::HostedZone
+        Properties:
+            Name: !Sub svcrolegenawsroute53hostedzone${AWS::AccountId}.com
+            QueryLoggingConfig:
+                CloudWatchLogsLogGroupArn: !ImportValue svcrolegensupport-AWS-Route53-HostedZone-LogGroup
+            HostedZoneConfig:
+                Comment: FOO
+            HostedZoneTags:
+              - Key: FOO
+                Value: BAR
+            # VPCs:
+            #   - VPCId: !ImportValue svcrolegensupport-AWS-Route53-HostedZone-VPC
+            #     VPCRegion: !Ref AWS::Region

@@ -144,6 +144,7 @@ The following resource types are supported with a per-type mapping:
 * AWS::IAM::Role
 * AWS::Lambda::Function
 * AWS::Lambda::Version
+* AWS::Route53::HostedZone
 * AWS::S3::Bucket
 * AWS::SNS::Topic
 * AWS::SQS::Queue

@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Route53-HostedZone-support
+Resources:
+
+    VPC:
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock: 10.0.0.0/24
+
+    VPC2:
+        Type: AWS::EC2::VPC
+        Properties:
+            CidrBlock: 10.0.0.0/24
+
+    LogGroup:
+        Type: AWS::Logs::LogGroup
+
+    LogGroup2:
+        Type: AWS::Logs::LogGroup
+
+Outputs:
+    VPC:
+        Value: !Ref VPC
+        Export:
+            Name: svcrolegensupport-AWS-Route53-HostedZone-VPC
+
+    VPC2:
+        Value: !Ref VPC2
+        Export:
+            Name: svcrolegensupport-AWS-Route53-HostedZone-VPC2
+
+    LogGroup:
+        Value: !GetAtt LogGroup.Arn
+        Export:
+            Name: svcrolegensupport-AWS-Route53-HostedZone-LogGroup
+
+    LogGroup2:
+        Value: !GetAtt LogGroup2.Arn
+        Export:
+            Name: svcrolegensupport-AWS-Route53-HostedZone-LogGroup2

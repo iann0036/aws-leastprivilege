@@ -10,6 +10,7 @@ from .mappings.iam import *
 from .mappings.s3 import *
 from .mappings.sns import *
 from .mappings.sqs import *
+from .mappings.route53 import *
 
 
 class InvalidArguments(Exception):

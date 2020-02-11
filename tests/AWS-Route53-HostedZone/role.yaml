@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-Route53-HostedZone-role
+Resources:
+    CloudFormationServiceRole:
+        Type: AWS::IAM::Role
+        Properties:
+            RoleName: AWS-Route53-HostedZone-cfnservicerole
+            AssumeRolePolicyDocument:
+                Version: '2012-10-17'
+                Statement:
+                  - Effect: Allow
+                    Principal:
+                        Service:
+                          - cloudformation.amazonaws.com
+                    Action:
+                      - sts:AssumeRole
+            Path: "/"
+            Policies:
+              - PolicyName: Route53-HostedZone-create
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - route53:CreateHostedZone
+                          - ec2:DescribeVpcs
+                        Resource: '*'
+                      - Effect: Allow
+                        Action:
+                          - route53:ChangeTagsForResource
+                          - route53:CreateQueryLoggingConfig
+                        Resource: 'arn:aws:route53:::hostedzone/*'
+                      - Effect: Allow
+                        Action:
+                          - route53:GetChange
+                        Resource: 'arn:aws:route53:::change/*'
+              - PolicyName: Route53-HostedZone-update
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - route53:UpdateHostedZoneComment
+                          - route53:AssociateVPCWithHostedZone
+                          - route53:DisassociateVPCFromHostedZone
+                        Resource: 'arn:aws:route53:::hostedzone/*'
+                      - Effect: Allow
+                        Action:
+                          - route53:DeleteQueryLoggingConfig
+                        Resource: 'arn:aws:route53:::queryloggingconfig/*'
+              - PolicyName: Route53-HostedZone-delete
+                PolicyDocument:
+                    Version: '2012-10-17'
+                    Statement:
+                      - Effect: Allow
+                        Action:
+                          - route53:DeleteHostedZone
+                        Resource: 'arn:aws:route53:::hostedzone/*'
+                      - Effect: Allow
+                        Action:
+                          - route53:ListQueryLoggingConfigs
+                        Resource: 'arn:aws:route53:::hostedzone/*'
+                      - Effect: Allow
+                        Action:
+                          - route53:DeleteQueryLoggingConfig
+                        Resource: 'arn:aws:route53:::queryloggingconfig/*'
