@@ -46,7 +46,7 @@ class PermissionsManager:
         
         if lifecycle != "Update" or self.include_update_actions:
             tracked_permission = {
-                'Sid': '{}-{}{}{}{}'.format(resname, lifecycle, self.tracked_lifecycle_count[resname][lifecycle], non_mandatory_str, registry_str),
+                'Sid': '{}{}{}{}{}'.format(resname, lifecycle, self.tracked_lifecycle_count[resname][lifecycle], non_mandatory_str, registry_str),
                 'Effect': 'Allow',
                 'Action': actions,
                 'Resource': resources
