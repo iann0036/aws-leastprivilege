@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: svcrolegen-AWS-SSM-Parameter
+Resources:
+  Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Type: String
+      Name: /cfnlp/test
+      Value: "test"

@@ -148,3 +148,5 @@ The following resource types are supported with a per-type mapping:
 * AWS::S3::Bucket
 * AWS::SNS::Topic
 * AWS::SQS::Queue
+* AWS::SSM::Parameter
+

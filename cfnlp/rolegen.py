@@ -11,6 +11,7 @@ from .mappings.s3 import *
 from .mappings.sns import *
 from .mappings.sqs import *
 from .mappings.route53 import *
+from .mappings.ssm import *
 
 
 class InvalidArguments(Exception):
