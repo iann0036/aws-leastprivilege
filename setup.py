@@ -24,7 +24,7 @@ setup(name='cfnlp',
       zip_safe=True,
       install_requires=[
           'boto3>=1.10.41',
-          'cfn-flip>=1.2.2'
+          'cfn-flip>=1.3.0'
       ],
       entry_points={'console_scripts': [
           'cfnlp = cfnlp.main:main'
